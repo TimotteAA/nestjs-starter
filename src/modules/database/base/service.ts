@@ -120,7 +120,7 @@ export abstract class BaseService<
      */
     async delete(ids: string[], trash?: boolean) {
         let items: E[] = [];
-        if (this.repository instanceof BaseTreeRepository<E>) {
+        if (this.repository instanceof BaseTreeRepository) {
             items = await this.repository.find({
                 where: { id: In(ids) as any },
                 withDeleted: this.enableTrash ? true : undefined,
