@@ -1,4 +1,3 @@
-/* eslint-disable func-names */
 import { exit } from 'process';
 
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -33,7 +32,7 @@ export class App {
         return this._configure;
     }
 
-    static get app() {
+    static get app(): NestFastifyApplication {
         return this._app;
     }
 

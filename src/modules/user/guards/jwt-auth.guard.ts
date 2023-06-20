@@ -13,6 +13,7 @@ import { TokenService } from '../services/token.service';
  * 检测用户是否已登录
  */
 @Injectable()
+// @ts-ignore
 export class JwtAuthGuard extends AuthGuard('jwt') {
     constructor(protected reflector: Reflector, protected tokenService: TokenService) {
         super();
@@ -44,9 +45,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const accessToken = isNil(requestToken)
             ? undefined
             : await this.tokenService.checkAccessToken(requestToken!);
+        console.log('accessToken', accessToken);
         if (isNil(accessToken) && !allowGuest) throw new UnauthorizedException();
         try {
             // 检测token是否为损坏或过期的无效状态,如果无效则尝试刷新token
+
             const result = await super.canActivate(context);
             if (allowGuest) return true;
             return result as boolean;

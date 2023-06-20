@@ -13,6 +13,7 @@ export const creator = createApp({
     configs,
     configure: { storage: true },
     modules: [UserModule, ContentModule],
+    // @ts-ignore
     globals: { guard: JwtAuthGuard },
     builder: async ({ configure, BootModule }) => {
         return NestFactory.create<NestFastifyApplication>(BootModule, new FastifyAdapter(), {
