@@ -18,8 +18,8 @@ export const createAppConfig: (
 ) => ConfigureFactory<AppConfig> = (register) => ({
     register,
     defaultRegister: (configure) => ({
-        host: configure.env('APP_HOST', '127.0.0.1'),
-        port: configure.env('APP_PORT', (v) => toNumber(v), 3000),
+        host: configure.env('APP_HOST'),
+        port: configure.env('APP_PORT', (v) => toNumber(v)),
         https: configure.env('APP_SSL', (v) => toBoolean(v), false),
         timezone: configure.env('APP_TIMEZONE', 'Asia/Shanghai'),
         locale: configure.env('APP_LOCALE', 'zh-cn'),

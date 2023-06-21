@@ -11,7 +11,7 @@ export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
             controllers: [],
             doc: {
                 title: '应用接口',
-                description: 'CMS系统的应用接口',
+                description: 'gpt服务的接口',
                 tags: [
                     { name: '分类', description: '分类的增删查改操作' },
                     { name: '文章', description: '文章的增删查改操作' },

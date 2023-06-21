@@ -26,6 +26,7 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
     }
     // 添加控制器方法的具体实现,参数的DTO类型,方法及路径装饰器,序列化选项,是否允许匿名访问等metadata
     // 添加其它回调函数
+    // 遍历开启的回调方法
     for (const { name, option = {} } of methods) {
         if (isNil(Object.getOwnPropertyDescriptor(Target.prototype, name))) {
             const descriptor =
@@ -42,6 +43,20 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
         }
 
         const descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
+
+        // console.log(Target.prototype.);
+        // Target.prototype.name = name;
+
+        // // 保存路由方法
+        // if (Target instanceof BaseControllerWithTrash) {
+        //     // const handlerName = handlerDescriptor.value.name;
+        //     (Target.prototype as BaseControllerWithTrash<any>).saveMethodName(
+        //         Target.prototype,
+        //         name,
+        //     );
+        // } else if (Target instanceof BaseController) {
+        //     (Target.prototype as BaseController<any>).saveMethodName(Target.prototype, name);
+        // }
 
         const [, ...params] = Reflect.getMetadata('design:paramtypes', Target.prototype, name);
 
@@ -104,9 +119,30 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
             default:
                 break;
         }
-
+        // console.log('name', name, Target.prototype, option.allowGuest);
         if (option.allowGuest) Reflect.defineMetadata(ALLOW_GUEST, true, Target.prototype, name);
 
         if (!isNil(option.hook)) option.hook(Target, name);
+
+        const handlerDescriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
+
+        if (handlerDescriptor && handlerDescriptor.value) {
+            // const handlerName = handlerDescriptor.value.name;
+            // console.log('handlerName', handlerName);
+            // console.log('Target', Target.prototype, name);
+            saveMethodName(Target.prototype, name); // 将方法名称保存为元数据
+            // 将 handlerName 用于你的逻辑
+        }
     }
 };
+
+// 保存方法名称的工具函数
+export function saveMethodName(target: any, methodName: string) {
+    // Reflect.defineMetadata('methodName', methodName, target);
+    Reflect.defineMetadata('methodName', methodName, target, methodName);
+}
+
+// 获取方法名称的工具函数
+export function getMethodName(target: any): string | undefined {
+    return Reflect.getMetadata('methodName', target);
+}

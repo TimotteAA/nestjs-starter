@@ -80,6 +80,7 @@ export function createHookOption(
                     Object.getOwnPropertyDescriptor(target.prototype, method),
                 );
             if (!allowGuest) {
+                // 不允许匿名，对该路有方法加上ApiBearerAuth装饰器
                 ApiBearerAuth()(
                     target,
                     method,

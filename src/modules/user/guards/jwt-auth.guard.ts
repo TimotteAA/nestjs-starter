@@ -24,21 +24,30 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
      * @param context
      */
     async canActivate(context: ExecutionContext) {
+        const methodName = Reflect.getMetadata(
+            'methodName',
+            context.getHandler().constructor.prototype,
+        );
+        console.log('methodName', methodName);
         const crudGuest = Reflect.getMetadata(
             ALLOW_GUEST,
             context.getClass().prototype,
             context.getHandler().name,
+            // 'list',
         );
         const defaultGuest = this.reflector.getAllAndOverride<boolean>(ALLOW_GUEST, [
             context.getHandler(),
             context.getClass(),
         ]);
         const allowGuest = crudGuest ?? defaultGuest;
+        console.log('crudGuest', crudGuest);
+        // console.log('defaultGuest', defaultGuest);
         const request = this.getRequest(context);
         const response = this.getResponse(context);
         // if (!request.headers.authorization) return false;
         // 从请求头中获取token
         // 如果请求头不含有authorization字段则认证失败
+        // token value
         const requestToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
         if (isNil(requestToken) && !allowGuest) return false;
         // 判断token是否存在,如果不存在则认证失败
