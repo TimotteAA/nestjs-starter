@@ -47,13 +47,6 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
 
         const descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
         // console.log(Target, name, descriptor);
-        if (Target.name === 'CommentController') {
-            console.log(
-                Target.name,
-                Reflect.getMetadata('design:paramtypes', Target.prototype, name),
-                name,
-            );
-        }
         const [_, ...params] =
             Reflect.getMetadata('design:paramtypes', Target.prototype, name) ?? [];
 
@@ -124,9 +117,30 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
             default:
                 break;
         }
-
+        // console.log('name', name, Target.prototype, option.allowGuest);
         if (option.allowGuest) Reflect.defineMetadata(ALLOW_GUEST, true, Target.prototype, name);
 
         if (!isNil(option.hook)) option.hook(Target, name);
+
+        const handlerDescriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
+
+        if (handlerDescriptor && handlerDescriptor.value) {
+            // const handlerName = handlerDescriptor.value.name;
+            // console.log('handlerName', handlerName);
+            // console.log('Target', Target.prototype, name);
+            saveMethodName(Target.prototype, name); // 将方法名称保存为元数据
+            // 将 handlerName 用于你的逻辑
+        }
     }
 };
+
+// 保存方法名称的工具函数
+export function saveMethodName(target: any, methodName: string) {
+    // Reflect.defineMetadata('methodName', methodName, target);
+    Reflect.defineMetadata('methodName', methodName, target, methodName);
+}
+
+// 获取方法名称的工具函数
+export function getMethodName(target: any): string | undefined {
+    return Reflect.getMetadata('methodName', target);
+}
