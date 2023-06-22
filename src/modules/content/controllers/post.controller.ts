@@ -25,7 +25,7 @@ import { PostService } from '../services/post.service';
             option: createHookOption({ summary: '文章查询,以分页模式展示', guest: true }),
         },
         {
-            name: 'store',
+            name: 'create',
             option: createHookOption('创建文章'),
         },
         {
@@ -42,7 +42,7 @@ import { PostService } from '../services/post.service';
         },
     ],
     dtos: {
-        store: CreatePostDto,
+        create: CreatePostDto,
         update: UpdatePostDto,
         list: QueryPostDto,
     },

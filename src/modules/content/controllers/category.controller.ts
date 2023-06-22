@@ -29,7 +29,7 @@ import { CategoryService } from '../services';
             option: createHookOption({ summary: '分类详情', guest: true }),
         },
         {
-            name: 'store',
+            name: 'create',
             option: createHookOption('创建分类'),
         },
         {
@@ -46,7 +46,7 @@ import { CategoryService } from '../services';
         },
     ],
     dtos: {
-        store: CreateCategoryDto,
+        create: CreateCategoryDto,
         update: UpdateCategoryDto,
     },
 }))

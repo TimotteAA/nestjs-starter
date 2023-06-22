@@ -25,7 +25,7 @@ import { CommentService } from '../services';
             option: createHookOption({ summary: '评论详情', guest: true }),
         },
         {
-            name: 'store',
+            name: 'create',
             option: createHookOption('添加评论'),
         },
         {
@@ -34,7 +34,7 @@ import { CommentService } from '../services';
         },
     ],
     dtos: {
-        store: CreateCommentDto,
+        create: CreateCommentDto,
         list: QueryCommentDto,
     },
 }))

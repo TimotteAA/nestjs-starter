@@ -7,7 +7,7 @@ import { Configure } from '../core/configure';
 /**
  * CRUD控制器方法列表
  */
-export type CrudMethod = 'detail' | 'delete' | 'restore' | 'list' | 'store' | 'update';
+export type CrudMethod = 'detail' | 'delete' | 'restore' | 'list' | 'create' | 'update';
 
 /**
  * CRUD装饰器的方法选项
@@ -41,7 +41,7 @@ export interface CrudOptions {
     enabled: Array<CrudMethod | CrudItem>;
     // 一些方法要使用到的自定义DTO
     dtos: {
-        [key in 'list' | 'store' | 'update']?: Type<any>;
+        [key in 'list' | 'create' | 'update']?: Type<any>;
     };
 }
 

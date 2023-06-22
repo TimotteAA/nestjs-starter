@@ -33,6 +33,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             context.getHandler(),
             context.getClass(),
         ]);
+
+        // console.log('crudGest', crudGuest);
         const allowGuest = crudGuest ?? defaultGuest;
         const request = this.getRequest(context);
         const response = this.getResponse(context);
@@ -45,7 +47,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const accessToken = isNil(requestToken)
             ? undefined
             : await this.tokenService.checkAccessToken(requestToken!);
-        console.log('accessToken', accessToken);
+        // console.log('accessToken', accessToken);
         if (isNil(accessToken) && !allowGuest) throw new UnauthorizedException();
         try {
             // 检测token是否为损坏或过期的无效状态,如果无效则尝试刷新token

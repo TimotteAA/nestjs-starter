@@ -6,6 +6,7 @@ import { isNil } from 'lodash';
 import { BaseController, BaseControllerWithTrash } from './base';
 import { ALLOW_GUEST } from './constants';
 
+import { DeleteDto, RestoreDto } from './dtos';
 import { CrudItem, CrudOptions } from './types';
 
 export const registerCrud = async <T extends BaseController<any> | BaseControllerWithTrash<any>>(
@@ -26,6 +27,7 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
     }
     // 添加控制器方法的具体实现,参数的DTO类型,方法及路径装饰器,序列化选项,是否允许匿名访问等metadata
     // 添加其它回调函数
+    // console.log(Target, methods);
     for (const { name, option = {} } of methods) {
         if (isNil(Object.getOwnPropertyDescriptor(Target.prototype, name))) {
             const descriptor =
@@ -35,24 +37,34 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
 
             Object.defineProperty(Target.prototype, name, {
                 ...descriptor,
-                async value(...args: any[]) {
-                    return descriptor.value.apply(this, args);
-                },
+                value: {
+                    async [name](...args: any[]) {
+                        return descriptor.value.apply(this, args);
+                    },
+                }[name],
             });
         }
 
         const descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
+        // console.log(Target, name, descriptor);
+        if (Target.name === 'CommentController') {
+            console.log(
+                Target.name,
+                Reflect.getMetadata('design:paramtypes', Target.prototype, name),
+                name,
+            );
+        }
+        const [_, ...params] =
+            Reflect.getMetadata('design:paramtypes', Target.prototype, name) ?? [];
 
-        const [, ...params] = Reflect.getMetadata('design:paramtypes', Target.prototype, name);
-
-        if (name === 'store' && !isNil(dtos.store)) {
+        if (name === 'create' && !isNil(dtos.create)) {
             Reflect.defineMetadata(
                 'design:paramtypes',
-                [dtos.store, ...params],
+                [dtos.create, ...params],
                 Target.prototype,
                 name,
             );
-            ApiBody({ type: dtos.store })(Target, name, descriptor);
+            ApiBody({ type: dtos.create })(Target, name, descriptor);
         } else if (name === 'update' && !isNil(dtos.update)) {
             Reflect.defineMetadata(
                 'design:paramtypes',
@@ -69,6 +81,11 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
                 name,
             );
             ApiQuery({ type: dtos.list })(Target, name, descriptor);
+        } else if (name === 'delete') {
+            // add api for delete
+            ApiBody({ type: DeleteDto })(Target, name, descriptor);
+        } else if (name === 'restore') {
+            ApiBody({ type: RestoreDto })(Target, name, descriptor);
         }
 
         let serialize: ClassTransformOptions = {};
@@ -92,7 +109,7 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
             case 'detail':
                 Get(':id')(Target, name, descriptor);
                 break;
-            case 'store':
+            case 'create':
                 Post()(Target, name, descriptor);
                 break;
             case 'update':
@@ -100,6 +117,9 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
                 break;
             case 'delete':
                 Delete()(Target, name, descriptor);
+                break;
+            case 'restore':
+                Patch('restore')(Target, name, descriptor);
                 break;
             default:
                 break;
