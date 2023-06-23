@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, Length, IsNumberString } from 'class-validator';
 
 import { IsMatch, IsMatchPhone, IsPassword } from '@/modules/core/constraints';
 import { IsUnique, IsUniqueExist } from '@/modules/database/constraints';
 
-import { UserValidateGroups } from '../constants';
+import { CaptchaType, UserValidateGroups } from '../constants';
 import { UserEntity } from '../entities/user.entity';
 
 /**
@@ -126,4 +126,23 @@ export class UserCommonDto {
     @IsMatch('password', { message: '两次输入密码不同', always: true })
     @IsNotEmpty({ message: '请再次输入密码以确认', always: true })
     readonly plainPassword!: string;
+
+    @ApiPropertyOptional({
+        description: '验证码类型',
+        enum: CaptchaType,
+    })
+    @IsEnum(CaptchaType)
+    type: CaptchaType;
+
+    @ApiProperty({
+        description: '手机或邮箱验证码',
+        maxLength: 6,
+        minLength: 6,
+    })
+    @IsNumberString(undefined, { message: '验证码必须是数字', always: true })
+    @Length(6, 6, {
+        message: '验证码长度错误',
+        always: true,
+    })
+    code!: string;
 }

@@ -18,6 +18,7 @@ export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
                     { name: '评论', description: '评论的增删查操作' },
                     { name: '账户操作', description: 'Auth操作' },
                     { name: '用户管理', description: '用户的增删查改操作' },
+                    { name: '验证码操作', description: '用户相关验证码操作' },
                 ],
             },
             children: [

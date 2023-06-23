@@ -33,6 +33,7 @@ export class TokenService {
             if (now.isAfter(refreshToken.expired_at)) return null;
             // 如果没过期则生成新的access_token和refresh_token
             const token = await this.generateAccessToken(user, now);
+            // 删除新的token
             await accessToken.remove();
             response.header('token', token.accessToken.value);
             return token;

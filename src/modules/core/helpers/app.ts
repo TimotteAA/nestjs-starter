@@ -11,7 +11,13 @@ import { DatabaseModule } from '@/modules/database/database.module';
 
 import { ElasticModule } from '@/modules/elastic/elastic.module';
 
+import { QueueModule } from '@/modules/queue/queue.module';
+import { RedisModule } from '@/modules/redis/redis.module';
 import { RestfulModule } from '@/modules/restful/restful.module';
+
+import { SmtpModule } from '@/modules/smtp/smtp.module';
+
+import { TecentOsModule } from '@/modules/tencent-os/tecent-os.module';
 
 import { App } from '../app';
 import { Configure } from '../configure';
@@ -71,6 +77,18 @@ export async function createBootModule(
     if (configure.has('database')) importModules.push(DatabaseModule);
     if (configure.has('elastic')) importModules.push(ElasticModule);
     if (configure.has('api')) importModules.push(RestfulModule);
+    if (configure.has('redis')) {
+        importModules.push(RedisModule);
+        if (configure.has('queue')) {
+            importModules.push(QueueModule);
+        }
+    }
+    if (configure.has('smtp')) {
+        importModules.push(SmtpModule);
+    }
+    if (configure.has('sms') || configure.has('cos')) {
+        importModules.push(TecentOsModule);
+    }
     const moduleMaps = await createImportModules(configure, importModules);
     const imports: ModuleMetadata['imports'] = Object.values(moduleMaps).map((m) => m.module);
     const providers: ModuleMetadata['providers'] = [];

@@ -18,6 +18,7 @@ export const database = createDbConfig((configure) => ({
             database: configure.env('DB_DATABASE'),
             seeders: [ContentSeeder],
             factories: [ContentFactory],
+            timezone: '+8.00', // 上海时区，默认为UTC
         },
     ],
 }));

@@ -1,17 +1,20 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { FastifyRequest as Request } from 'fastify';
+import { isNil } from 'lodash';
 import { ExtractJwt } from 'passport-jwt';
 
 import { App } from '@/modules/core/app';
 import { EnvironmentType } from '@/modules/core/constants';
 import { getTime } from '@/modules/core/helpers';
 
-import { RegisterDto, UpdatePasswordDto } from '../dtos';
+import { CaptchaType } from '../constants';
+import { PhoneRegisterDto, RegisterDto, UpdatePasswordDto } from '../dtos';
+import { CodeEntity } from '../entities';
 import { UserEntity } from '../entities/user.entity';
 import { decrypt, getUserConfig } from '../helpers';
 
-import { UserRepository } from '../repositories';
+import { CodeRepository, UserRepository } from '../repositories';
 import { UserConfig } from '../types';
 
 import { TokenService } from './token.service';
@@ -27,10 +30,11 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly tokenService: TokenService,
         protected readonly userRepository: UserRepository,
+        private readonly codeRepo: CodeRepository,
     ) {}
 
     /**
-     * 用户登录验证
+     * localStrategy的用户名验证
      * @param credential
      * @param password
      */
@@ -70,7 +74,7 @@ export class AuthService {
     }
 
     /**
-     * 登录用户后生成新的token和refreshToken
+     * 根据用户id创建一对新的token
      * @param id
      */
     async createToken(id: string) {
@@ -101,6 +105,23 @@ export class AuthService {
     }
 
     /**
+     * 手机验证码注册
+     * @param data
+     */
+    async registerSms(data: PhoneRegisterDto) {
+        const { code, phone } = data;
+        const isValid = await this.checkIsCaptchaValid(code, CaptchaType.SMS, phone);
+        if (!isValid) throw new BadRequestException('验证码已过期');
+        // 创建user
+        const user = new UserEntity();
+        user.phone = phone;
+        user.actived = true;
+        // 保存user
+        await user.save();
+        return this.userService.findOneByCondition({ id: user.id });
+    }
+
+    /**
      * 更新用户密码
      * @param user
      * @param param1
@@ -115,6 +136,23 @@ export class AuthService {
         item.password = password;
         await this.userRepository.save(item);
         return this.userService.findOneByCondition({ id: item.id });
+    }
+
+    protected async checkIsCaptchaValid(code: string, type: CaptchaType, media: string) {
+        const condition = { code, type, media };
+        // console.log(condition);
+        console.log(code, media);
+        const captcha = await this.codeRepo.findOne({ where: condition });
+        if (isNil(captcha)) throw new BadRequestException(CodeEntity, '验证码不正确');
+        // console.log(getTime({date: captcha.updatedAt}).add(timeObj.limit, "second"))
+        // console.log(getTime());
+
+        const age = await getUserConfig<number>('captcha.age');
+        console.log(age);
+        const isValid = (await getTime({ date: captcha.updatedAt }))
+            .add(age, 'second')
+            .isAfter(await getTime());
+        return isValid;
     }
 
     /**

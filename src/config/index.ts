@@ -4,3 +4,7 @@ export * from './content.config';
 export * from './app.config';
 export * from '../routes';
 export * from './user.config';
+export * from './redis.config';
+export * from './queue.config';
+export * from './smtp.config';
+export * from './sms.config';

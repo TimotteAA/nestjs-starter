@@ -67,4 +67,10 @@ export class UserEntity extends BaseEntity {
         comment: '删除时间',
     })
     deletedAt!: Date;
+
+    @Column({ comment: '用户是否激活', default: true })
+    actived?: boolean;
+
+    @Column({ comment: '是否是超级管理员用户', default: false })
+    isCreator?: boolean;
 }

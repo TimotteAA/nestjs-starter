@@ -14,6 +14,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
         const request = context.switchToHttp().getRequest();
         try {
             // console.log(request.headers['user-agent']);
+            // 在local auth guard中对dto做校验
             await validateOrReject(plainToClass(CredentialDto, request.body), {
                 validationError: { target: false },
             });

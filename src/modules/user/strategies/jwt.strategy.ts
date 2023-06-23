@@ -22,6 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     /**
      * 通过荷载解析出用户ID
+     * guard会调
      * 通过用户ID查询出用户是否存在,并把id放入request方便后续操作
      * @param payload
      */

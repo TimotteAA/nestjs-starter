@@ -47,3 +47,8 @@ declare type ReRequired<T> = {
             : ReRequired<T[P]>
         : T[P];
 };
+
+/**
+ * 嵌套对象
+ */
+declare type NestedRecord = Record<string, Record<string, any>>;

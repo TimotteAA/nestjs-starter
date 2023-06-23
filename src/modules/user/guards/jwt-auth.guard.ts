@@ -37,6 +37,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
         // console.log('crudGest', crudGuest);
         const allowGuest = crudGuest ?? defaultGuest;
+        if (allowGuest) return true;
         // console.log('crudGuest', crudGuest);
         // console.log('defaultGuest', defaultGuest);
         const request = this.getRequest(context);
@@ -47,15 +48,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         // token value
         const requestToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
         if (isNil(requestToken) && !allowGuest) return false;
-        // 判断token是否存在,如果不存在则认证失败
+        // 根据token字符串，去判断数据库中token是否存在,如果不存在则认证失败
         const accessToken = isNil(requestToken)
             ? undefined
             : await this.tokenService.checkAccessToken(requestToken!);
         // console.log('accessToken', accessToken);
         if (isNil(accessToken) && !allowGuest) throw new UnauthorizedException();
         try {
-            // 检测token是否为损坏或过期的无效状态,如果无效则尝试刷新token
-
+            // 原生的检测token是否为损坏或过期的无效状态,如果无效则尝试刷新token
             const result = await super.canActivate(context);
             if (allowGuest) return true;
             return result as boolean;

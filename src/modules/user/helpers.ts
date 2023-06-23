@@ -26,6 +26,13 @@ export const decrypt = (password: string, hashed: string) => {
 };
 
 /**
+ * 生成随机验证码
+ */
+export function generateCatpchaCode() {
+    return Math.random().toFixed(6).slice(-6);
+}
+
+/**
  * 用户配置创建函数
  * @param register
  */
@@ -40,6 +47,12 @@ export const createUserConfig: (
  * 默认用户配置
  */
 export const defaultUserConfig = (configure: Configure): UserConfig => {
+    const captchaTimeConfig = {
+        age: configure.env('CAPTCHA_AGE', 5 * 60),
+        // limit: configure.env('CAPTCHA_LIMIT', 3 * 60),
+        limit: 3,
+    };
+
     return {
         hash: 10,
         jwt: {
@@ -51,6 +64,54 @@ export const defaultUserConfig = (configure: Configure): UserConfig => {
                 (v) => toNumber(v),
                 3600 * 30,
             ),
+        },
+        captcha: {
+            sms: {
+                login: {
+                    templateId: configure.env('SMS_LOGIN_CAPTCHA_QCLOUD'),
+                    ...captchaTimeConfig,
+                },
+                register: {
+                    templateId: configure.env('SMS_REGISTER_CAPTCHA_QCLOUD'),
+                    ...captchaTimeConfig,
+                },
+                retrieve_password: {
+                    templateId: configure.env('SMS_RETRIEVEPASSWORD_CAPTCHA_QCLOUD'),
+                    ...captchaTimeConfig,
+                },
+                bound: {
+                    templateId: configure.env('SMS_BOUND_CAPTCHA_QCLOUD'),
+                    ...captchaTimeConfig,
+                },
+                reset_password: {
+                    templateId: configure.env('SMS_RETRIEVEPASSWORD_CAPTCHA_QCLOUD'),
+                    ...captchaTimeConfig,
+                },
+            },
+            email: {
+                login: {
+                    subject: configure.env('EMAIL_LOGIN'),
+                    ...captchaTimeConfig,
+                },
+                register: {
+                    subject: configure.env('EMAIL_REGISTER'),
+                    ...captchaTimeConfig,
+                },
+                retrieve_password: {
+                    subject: configure.env('EMAIL_RETRIEVEPASSWORD'),
+                    ...captchaTimeConfig,
+                },
+                bound: {
+                    subject: configure.env('EMAIL_BOUND'),
+                    ...captchaTimeConfig,
+                },
+                reset_password: {
+                    subject: configure.env('EMAIL_RESET'),
+                    ...captchaTimeConfig,
+                },
+            },
+            age: captchaTimeConfig.age,
+            limit: captchaTimeConfig.limit,
         },
     };
 };

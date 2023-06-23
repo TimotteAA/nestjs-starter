@@ -13,7 +13,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Depends } from '@/modules/restful/decorators';
 
 import { Guest, ReqUser } from '../decorators';
-import { CredentialDto, RegisterDto, UpdatePasswordDto } from '../dtos';
+import { CredentialDto, PhoneRegisterDto, RegisterDto, UpdatePasswordDto } from '../dtos';
 import { UserEntity } from '../entities';
 import { LocalAuthGuard } from '../guards';
 import { AuthService } from '../services';
@@ -77,5 +77,14 @@ export class AuthController {
         @Body() data: UpdatePasswordDto,
     ): Promise<UserEntity> {
         return this.authService.updatePassword(user, data);
+    }
+
+    @Post('register-sms')
+    @ApiOperation({
+        summary: '手机注册',
+    })
+    @Guest()
+    async registerSms(@Body() data: PhoneRegisterDto) {
+        return this.authService.registerSms(data);
     }
 }
