@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  3r:
+    specifier: 'link:'
+    version: 'link:'
   '@elastic/elasticsearch':
     specifier: ^8.6.0
     version: 8.6.0

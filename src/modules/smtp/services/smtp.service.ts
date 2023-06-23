@@ -69,12 +69,15 @@ export class SmtpService {
         const message = {
             ...pick(params, ['from', 'to', 'reply', 'attachments', 'subject']),
         };
-        const res = await email.send({
+        await email.send({
             template: tplPath,
             message,
             locals: params.vars,
         });
-        // console.log("res", res)
-        return res;
+
+        return {
+            ok: true,
+            message: '发送成功',
+        };
     }
 }

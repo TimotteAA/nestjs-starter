@@ -107,7 +107,8 @@ export class CaptchaJob implements OnModuleInit {
         if (isNil(user))
             throw new BadRequestException(`user of ${key} with ${condition[key]} does not exist`);
 
-        return this.sendByUser({ user, action, type, message });
+        const results = await this.sendByUser({ user, action, type, message });
+        return results;
     }
 
     /**

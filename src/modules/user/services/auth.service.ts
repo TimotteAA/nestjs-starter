@@ -14,7 +14,16 @@ import { EnvironmentType } from '@/modules/core/constants';
 import { getTime } from '@/modules/core/helpers';
 
 import { CaptchaType } from '../constants';
-import { PhoneLoginDto, PhoneRegisterDto, RegisterDto, UpdatePasswordDto } from '../dtos';
+import {
+    BoundEmailDto,
+    BoundPhoneDto,
+    EmailLoginDto,
+    EmailRegisterDto,
+    PhoneLoginDto,
+    PhoneRegisterDto,
+    RegisterDto,
+    UpdatePasswordDto,
+} from '../dtos';
 import { CodeEntity } from '../entities';
 import { UserEntity } from '../entities/user.entity';
 import { decrypt, getUserConfig } from '../helpers';
@@ -181,6 +190,70 @@ export class AuthService {
         item.password = password;
         await this.userRepository.save(item);
         return this.userService.findOneByCondition({ id: item.id });
+    }
+
+    /**
+     * 邮箱验证码注册
+     * @param data
+     */
+    async registerEmail(data: EmailRegisterDto) {
+        const { code, email } = data;
+        const isValid = await this.checkIsCaptchaValid(code, CaptchaType.EMAIL, email);
+        if (!isValid) throw new BadRequestException('验证码已过期');
+        // 创建user
+        const user = new UserEntity();
+        user.email = email;
+        user.actived = true;
+        // 保存user
+        await user.save();
+        return this.userService.findOneByCondition({ id: user.id });
+    }
+
+    /**
+     * 邮箱登录
+     * @param data
+     */
+    async loginEmail(data: EmailLoginDto) {
+        const { code, email } = data;
+        const isValid = await this.checkIsCaptchaValid(code, CaptchaType.EMAIL, email);
+        if (!isValid) throw new BadRequestException('验证码已过期');
+        // 查询用户的condition
+        const condition = { email };
+        const user = await this.userService.findOneByCondition(condition);
+        const { accessToken } = await this.tokenService.generateAccessToken(user, await getTime());
+        return { token: accessToken.value };
+    }
+
+    /**
+     * 登录状态下绑定用户手机、密码
+     */
+    async bound(
+        user: ClassToPlain<UserEntity>,
+        data: BoundPhoneDto | BoundEmailDto,
+        type: CaptchaType,
+    ) {
+        if (type === CaptchaType.EMAIL) {
+            // 绑定邮箱
+            const requestData = data as BoundEmailDto;
+            const isValid = this.checkIsCaptchaValid(
+                data.code,
+                CaptchaType.EMAIL,
+                requestData.email,
+            );
+            if (!isValid) throw new BadRequestException('验证码已过期');
+            const userDb = await this.userService.findOneByCondition({ id: user.id });
+            userDb.email = requestData.email;
+            await userDb.save();
+            return this.userService.detail(userDb.id);
+        }
+        // 绑定手机
+        const requestData = data as BoundPhoneDto;
+        const isValid = this.checkIsCaptchaValid(data.code, CaptchaType.SMS, requestData.phone);
+        if (!isValid) throw new BadRequestException('验证码已过期');
+        const userDb = await this.userService.findOneByCondition({ id: user.id });
+        userDb.phone = requestData.phone;
+        await userDb.save();
+        return this.userService.detail(userDb.id);
     }
 
     protected async checkIsCaptchaValid(code: string, type: CaptchaType, media: string) {

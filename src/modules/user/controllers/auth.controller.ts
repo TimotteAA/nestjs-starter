@@ -15,7 +15,12 @@ import { Depends } from '@/modules/restful/decorators';
 import { CaptchaType } from '../constants';
 import { Guest, ReqUser } from '../decorators';
 import {
+    BoundEmailDto,
+    BoundPhoneDto,
     CredentialDto,
+    EmailLoginDto,
+    EmailRegisterDto,
+    EmailRetrievePasswordDto,
     PhoneLoginDto,
     PhoneRegisterDto,
     PhoneRetrievePasswordDto,
@@ -121,5 +126,73 @@ export class AuthController {
     async retrievePasswordSms(@Body() data: PhoneRetrievePasswordDto) {
         const { password, code, phone } = data;
         return this.authService.retrievePassword(password, code, phone, CaptchaType.SMS);
+    }
+
+    /** ******** **********************email操作***************************** */
+    /**
+     * 邮箱注册
+     * @param data
+     */
+    @Post('register-email')
+    @ApiOperation({
+        summary: '邮箱注册',
+    })
+    @Guest()
+    async registerEmail(@Body() data: EmailRegisterDto) {
+        return this.authService.registerEmail(data);
+    }
+
+    /**
+     * 邮箱验证码登录
+     */
+    @Post('login-email')
+    @ApiOperation({
+        summary: '邮箱登录',
+    })
+    @Guest()
+    async loginEmail(@Body() data: EmailLoginDto) {
+        return this.authService.loginEmail(data);
+    }
+
+    /**
+     * 邮箱验证码重设密码
+     * 其实就是更新密码...
+     * @param */
+    @Patch('retrieve-password-email')
+    @ApiOperation({
+        summary: '邮箱重设密码',
+    })
+    @Guest()
+    async retrievePasswordEmail(@Body() data: EmailRetrievePasswordDto) {
+        const { password, code, email } = data;
+        return this.authService.retrievePassword(password, code, email, CaptchaType.EMAIL);
+    }
+
+    /**
+     * 登录状态下绑定手机
+     * @param user
+     * @param data
+     */
+    @Patch('bound-phone')
+    @ApiOperation({
+        summary: '绑定手机',
+    })
+    @ApiBearerAuth()
+    async boundPhone(@ReqUser() user: ClassToPlain<UserEntity>, @Body() data: BoundPhoneDto) {
+        return this.authService.bound(user, data, CaptchaType.SMS);
+    }
+
+    /**
+     * 登录状态下绑定邮箱
+     * @param user
+     * @param data
+     */
+    @Patch('bound-email')
+    @ApiOperation({
+        summary: '绑定邮箱',
+    })
+    @ApiBearerAuth()
+    async boundEmail(@ReqUser() user: ClassToPlain<UserEntity>, @Body() data: BoundEmailDto) {
+        return this.authService.bound(user, data, CaptchaType.EMAIL);
     }
 }

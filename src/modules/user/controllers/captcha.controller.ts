@@ -63,7 +63,7 @@ export class CaptchaController {
             media: data,
             type: CaptchaType.EMAIL,
             action: CaptchaActionType.REGISTER,
-            message: '不能发送邮箱注册验证码',
+            // message: '不能发送邮箱注册验证码',
         });
         return res;
     }
@@ -93,7 +93,7 @@ export class CaptchaController {
      */
     @Post('send-login-email')
     @ApiOperation({
-        summary: '发送注册验证码：邮箱',
+        summary: '发送登录验证码：邮箱',
     })
     @Guest()
     async sendLoginEmail(@Body() data: LoginEmailCaptchaDto) {

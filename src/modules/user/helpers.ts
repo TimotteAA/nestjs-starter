@@ -13,7 +13,11 @@ import { UserConfig } from './types';
  * @param password
  */
 export const encrypt = async (password: string) => {
-    return bcrypt.hashSync(password, (await getUserConfig<number>('hash')) || 10);
+    // const hash = (await getUserConfig<UserConfig>()).hash || 10;
+    // console.log(password, hash);
+    const hash = (await getUserConfig<number>('hash')) ?? 10;
+
+    return bcrypt.hashSync(`${password}`, hash);
 };
 
 /**
@@ -21,8 +25,8 @@ export const encrypt = async (password: string) => {
  * @param password
  * @param hashed
  */
-export const decrypt = (password: string, hashed: string) => {
-    return bcrypt.compareSync(password, hashed);
+export const decrypt = async (password: string, hashed: string) => {
+    return bcrypt.compareSync(`${password}`, hashed);
 };
 
 /**
