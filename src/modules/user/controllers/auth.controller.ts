@@ -12,8 +12,16 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Depends } from '@/modules/restful/decorators';
 
+import { CaptchaType } from '../constants';
 import { Guest, ReqUser } from '../decorators';
-import { CredentialDto, PhoneRegisterDto, RegisterDto, UpdatePasswordDto } from '../dtos';
+import {
+    CredentialDto,
+    PhoneLoginDto,
+    PhoneRegisterDto,
+    PhoneRetrievePasswordDto,
+    RegisterDto,
+    UpdatePasswordDto,
+} from '../dtos';
 import { UserEntity } from '../entities';
 import { LocalAuthGuard } from '../guards';
 import { AuthService } from '../services';
@@ -86,5 +94,32 @@ export class AuthController {
     @Guest()
     async registerSms(@Body() data: PhoneRegisterDto) {
         return this.authService.registerSms(data);
+    }
+
+    /**
+     * 手机验证码登录
+     * @param data
+     */
+    @Post('login-sms')
+    @ApiOperation({
+        summary: '手机验证码登录',
+    })
+    @Guest()
+    async loginSms(@Body() data: PhoneLoginDto) {
+        return this.authService.loginSms(data);
+    }
+
+    /**
+     * 手机验证码重设密码
+     * 其实就是更新密码...
+     * @param */
+    @Patch('retrieve-password-sms')
+    @ApiOperation({
+        summary: '手机重设密码',
+    })
+    @Guest()
+    async retrievePasswordSms(@Body() data: PhoneRetrievePasswordDto) {
+        const { password, code, phone } = data;
+        return this.authService.retrievePassword(password, code, phone, CaptchaType.SMS);
     }
 }

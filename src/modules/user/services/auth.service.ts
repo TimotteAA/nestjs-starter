@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { FastifyRequest as Request } from 'fastify';
 import { isNil } from 'lodash';
@@ -9,7 +14,7 @@ import { EnvironmentType } from '@/modules/core/constants';
 import { getTime } from '@/modules/core/helpers';
 
 import { CaptchaType } from '../constants';
-import { PhoneRegisterDto, RegisterDto, UpdatePasswordDto } from '../dtos';
+import { PhoneLoginDto, PhoneRegisterDto, RegisterDto, UpdatePasswordDto } from '../dtos';
 import { CodeEntity } from '../entities';
 import { UserEntity } from '../entities/user.entity';
 import { decrypt, getUserConfig } from '../helpers';
@@ -117,6 +122,46 @@ export class AuthService {
         user.phone = phone;
         user.actived = true;
         // 保存user
+        await user.save();
+        return this.userService.findOneByCondition({ id: user.id });
+    }
+
+    /**
+     * 手机登录
+     * @param data
+     */
+    async loginSms(data: PhoneLoginDto) {
+        const { code, phone } = data;
+        const isValid = await this.checkIsCaptchaValid(code, CaptchaType.SMS, phone);
+        if (!isValid) throw new BadRequestException('验证码已过期');
+        // 查询用户的condition
+        const condition = { phone };
+        const user = await this.userService.findOneByCondition(condition);
+        const { accessToken } = await this.tokenService.generateAccessToken(user, await getTime());
+        return { token: accessToken.value };
+    }
+
+    /**
+    // 手机或者邮箱找回
+     * 找回密码
+     */
+    async retrievePassword(password: string, code: string, media: string, type: CaptchaType) {
+        const isValid = await this.checkIsCaptchaValid(code, type, media);
+        if (!isValid) throw new BadRequestException('验证码已过期');
+        // 查询用户
+        const key = type === CaptchaType.EMAIL ? 'email' : 'phone';
+        // 根据手机或邮箱查询user
+        const condition = { [key]: media };
+        // console.log(condition);
+        const user = await this.userService.findOneByCondition(condition);
+        if (isNil(user))
+            throw new UnauthorizedException(
+                UserEntity,
+                `user with ${key} of ${media} does not exist`,
+            );
+
+        // 更新用户的密码
+        user.password = password;
         await user.save();
         return this.userService.findOneByCondition({ id: user.id });
     }

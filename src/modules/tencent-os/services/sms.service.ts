@@ -51,7 +51,7 @@ export class SmsService {
             SmsSdkAppId: settings.appid,
             SignName: settings.sign,
         });
-        console.log('sms res', res);
+        // console.log('sms res', res);
         // 超时处理
         if (res.SendStatusSet[0].Code.includes('LimitExceeded')) {
             // console.log('1234');
