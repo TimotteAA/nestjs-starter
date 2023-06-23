@@ -23,6 +23,8 @@ import { IsDataExist } from '@/modules/database/constraints';
 
 import { ListWithTrashedQueryDto } from '@/modules/restful/dtos';
 
+import { UserEntity } from '@/modules/user/entities';
+
 import { PostBodyType, PostOrderType } from '../constants';
 import { CategoryEntity } from '../entities';
 
@@ -69,6 +71,16 @@ export class QueryPostDto extends ListWithTrashedQueryDto {
     })
     @IsOptional()
     orderBy?: PostOrderType;
+
+    @IsDataExist(UserEntity, {
+        // always: true,
+        message: '用不存在',
+    })
+    @IsUUID(undefined, {
+        message: '用户id格式错误',
+    })
+    @IsOptional({ always: true })
+    user?: UserEntity;
 }
 
 /**

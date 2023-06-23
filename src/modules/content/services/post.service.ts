@@ -8,6 +8,8 @@ import { BaseService } from '@/modules/database/base';
 import { manualPaginate, paginate } from '@/modules/database/helpers';
 import { QueryHook } from '@/modules/database/types';
 
+import { UserService } from '@/modules/user/services';
+
 import { PostOrderType } from '../constants';
 
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos/post.dto';
@@ -35,6 +37,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         protected repository: PostRepository,
         protected categoryRepository: CategoryRepository,
         protected categoryService: CategoryService,
+        protected userService: UserService,
         protected searchService?: SearchService,
         protected search_type: SearchType = 'against',
     ) {
@@ -81,7 +84,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
      * 创建文章
      * @param data
      */
-    async create(data: CreatePostDto) {
+    async create(data: CreatePostDto, author: string) {
         const createPostDto = {
             ...data,
             // 文章所属分类
@@ -90,6 +93,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                       id: In(data.categories),
                   })
                 : [],
+            author: await this.userService.findOneByCondition({ id: author }),
         };
         const item = await this.repository.save(createPostDto);
         if (!isNil(this.searchService)) {
@@ -172,7 +176,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         options: FindParams,
         callback?: QueryHook<PostEntity>,
     ) {
-        const { category, orderBy, isPublished, search } = options;
+        const { category, orderBy, isPublished, search, user } = options;
         const qb = await super.buildListQB(querBuilder, options, callback);
         if (typeof isPublished === 'boolean') {
             isPublished
@@ -205,6 +209,13 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                         search: `${search}*`,
                     });
             }
+        }
+        if (!isNil(user)) {
+            qb.andWhere({
+                user: {
+                    id: user,
+                },
+            });
         }
         this.addOrderByQuery(qb, orderBy);
         if (category) await this.queryByCategory(category, qb);

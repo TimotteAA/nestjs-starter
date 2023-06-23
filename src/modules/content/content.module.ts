@@ -5,6 +5,8 @@ import { ModuleBuilder } from '../core/decorators';
 import { DatabaseModule } from '../database/database.module';
 import { addEntities, addSubscribers } from '../database/helpers';
 
+import { UserModule } from '../user/user.module';
+
 import * as entities from './entities';
 import * as repositories from './repositories';
 import { CategoryRepository, PostRepository } from './repositories';
@@ -49,6 +51,7 @@ import { SearchType } from './types';
         imports: [
             await addEntities(configure, Object.values(entities)),
             DatabaseModule.forRepository(Object.values(repositories)),
+            UserModule,
         ],
         providers,
         exports: [

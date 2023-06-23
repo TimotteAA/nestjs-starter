@@ -7,6 +7,10 @@ import { Crud, Depends } from '@/modules/restful/decorators';
 
 import { createHookOption } from '@/modules/restful/helpers';
 
+import { ReqUser } from '@/modules/user/decorators';
+
+import { UserEntity } from '@/modules/user/entities';
+
 import { ContentModule } from '../content.module';
 import { CreateCommentDto, QueryCommentDto, QueryCommentTreeDto } from '../dtos';
 import { CommentService } from '../services';
@@ -52,5 +56,9 @@ export class CommentController extends BaseController<CommentService> {
         query: QueryCommentTreeDto,
     ) {
         return this.service.findTrees(query);
+    }
+
+    async create(@ReqUser() user: ClassToPlain<UserEntity>, data: CreateCommentDto) {
+        return this.service.create(data, user.id);
     }
 }

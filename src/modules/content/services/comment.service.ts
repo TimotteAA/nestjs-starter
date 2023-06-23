@@ -6,6 +6,8 @@ import { EntityNotFoundError, SelectQueryBuilder } from 'typeorm';
 
 import { BaseService } from '@/modules/database/base';
 
+import { UserService } from '@/modules/user/services';
+
 import { CreateCommentDto, QueryCommentDto, QueryCommentTreeDto } from '../dtos';
 import { CommentEntity } from '../entities/comment.entity';
 import { CommentRepository } from '../repositories/comment.repository';
@@ -16,7 +18,11 @@ import { PostRepository } from '../repositories/post.repository';
  */
 @Injectable()
 export class CommentService extends BaseService<CommentEntity, CommentRepository> {
-    constructor(protected repository: CommentRepository, protected postRepository: PostRepository) {
+    constructor(
+        protected repository: CommentRepository,
+        protected postRepository: PostRepository,
+        protected userService: UserService,
+    ) {
         super(repository);
     }
 
@@ -37,10 +43,11 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
      * @param dto
      */
     async paginate(options: QueryCommentDto) {
-        const { post } = options;
+        const { post, author } = options;
         const addQuery = async (qb: SelectQueryBuilder<CommentEntity>) => {
-            const condition: Record<string, string> = {};
+            const condition: Record<string, any> = {};
             if (!isNil(post)) condition.post = post;
+            if (!isNil(author)) condition.author.id = author;
             return Object.keys(condition).length > 0 ? qb.andWhere(condition) : qb;
         };
         return super.paginate({
@@ -54,7 +61,7 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
      * @param data
      * @param user
      */
-    async create(data: CreateCommentDto) {
+    async create(data: CreateCommentDto, user: string) {
         const parent = await this.getParent(undefined, data.parent);
         if (!isNil(parent) && parent.post.id !== data.post) {
             throw new ForbiddenException('Parent comment and child comment must belong same post!');
@@ -63,6 +70,7 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
             ...data,
             parent,
             post: await this.getPost(data.post),
+            author: await this.userService.findOneByCondition({ id: user }),
         });
         return this.repository.findOneOrFail({ where: { id: item.id } });
     }

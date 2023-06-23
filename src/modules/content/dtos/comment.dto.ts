@@ -7,6 +7,8 @@ import { IsDataExist } from '@/modules/database/constraints';
 
 import { ListQueryDto } from '@/modules/restful/dtos';
 
+import { UserEntity } from '@/modules/user/entities';
+
 import { CommentEntity, PostEntity } from '../entities';
 
 /**
@@ -23,6 +25,16 @@ export class QueryCommentDto extends ListQueryDto {
     @IsUUID(undefined, { message: '分类ID格式错误' })
     @IsOptional()
     post?: string;
+
+    @ApiPropertyOptional({
+        description: '评论所属用户Id:根据传入评论所属用户的ID对评论进行过滤',
+    })
+    @IsDataExist(UserEntity, {
+        message: '用户不存在',
+    })
+    @IsUUID(undefined, { message: '作者ID错误' })
+    @IsOptional()
+    author?: string;
 }
 
 /**

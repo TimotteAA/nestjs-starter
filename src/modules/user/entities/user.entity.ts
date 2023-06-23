@@ -9,6 +9,7 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
+import { CommentEntity, PostEntity } from '@/modules/content/entities';
 import { BaseEntity } from '@/modules/database/base';
 
 import { AccessTokenEntity } from './access-token.entity';
@@ -73,4 +74,14 @@ export class UserEntity extends BaseEntity {
 
     @Column({ comment: '是否是超级管理员用户', default: false })
     isCreator?: boolean;
+
+    @OneToMany(() => PostEntity, (post: PostEntity) => post.author, {
+        cascade: true,
+    })
+    posts: PostEntity[];
+
+    @OneToMany(() => CommentEntity, (c: CommentEntity) => c.author, {
+        cascade: true,
+    })
+    comments: CommentEntity[];
 }

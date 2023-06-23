@@ -7,11 +7,14 @@ import {
     Index,
     JoinTable,
     ManyToMany,
+    ManyToOne,
     OneToMany,
     UpdateDateColumn,
 } from 'typeorm';
 
 import { BaseEntity } from '@/modules/database/base';
+
+import { UserEntity } from '@/modules/user/entities';
 
 import { PostBodyType } from '../constants';
 
@@ -101,4 +104,12 @@ export class PostEntity extends BaseEntity {
         comment: '删除时间',
     })
     deletedAt: Date;
+
+    @Expose()
+    @ManyToOne(() => UserEntity, (user: UserEntity) => user.posts, {
+        nullable: false,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    })
+    author!: UserEntity;
 }

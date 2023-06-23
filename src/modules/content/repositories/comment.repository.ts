@@ -15,7 +15,10 @@ export class CommentRepository extends BaseTreeRepository<CommentEntity> {
     protected orderBy = 'createdAt';
 
     buildBaseQB(qb: SelectQueryBuilder<CommentEntity>): SelectQueryBuilder<CommentEntity> {
-        return super.buildBaseQB(qb).leftJoinAndSelect(`${this.qbName}.post`, 'post');
+        return super
+            .buildBaseQB(qb)
+            .leftJoinAndSelect(`${this.qbName}.post`, 'post')
+            .leftJoinAndSelect(`${this.qbName}.author`, 'author');
     }
 
     async findTrees(

@@ -11,6 +11,8 @@ import {
 
 import { BaseEntity } from '@/modules/database/base';
 
+import { UserEntity } from '@/modules/user/entities';
+
 import { PostEntity } from './post.entity';
 
 /**
@@ -43,6 +45,13 @@ export class CommentEntity extends BaseEntity {
         onUpdate: 'CASCADE',
     })
     post: PostEntity;
+
+    @Expose()
+    @ManyToOne(() => UserEntity, (user: UserEntity) => user.comments, {
+        nullable: false,
+        onDelete: 'CASCADE',
+    })
+    author!: UserEntity;
 
     @TreeParent({ onDelete: 'CASCADE' })
     parent: CommentEntity | null;

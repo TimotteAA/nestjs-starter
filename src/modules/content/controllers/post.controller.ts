@@ -7,6 +7,10 @@ import { Crud, Depends } from '@/modules/restful/decorators';
 
 import { createHookOption } from '@/modules/restful/helpers';
 
+import { ReqUser } from '@/modules/user/decorators';
+
+import { UserEntity } from '@/modules/user/entities';
+
 import { ContentModule } from '../content.module';
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
 import { PostService } from '../services/post.service';
@@ -51,5 +55,9 @@ import { PostService } from '../services/post.service';
 export class PostController extends BaseControllerWithTrash<PostService> {
     constructor(protected service: PostService) {
         super(service);
+    }
+
+    async create(@ReqUser() user: ClassToPlain<UserEntity>, data: CreatePostDto) {
+        return this.service.create(data, user.id);
     }
 }
