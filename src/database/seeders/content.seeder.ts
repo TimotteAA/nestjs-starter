@@ -4,6 +4,7 @@ import path from 'path';
 
 import { faker } from '@faker-js/faker';
 import { existsSync } from 'fs-extra';
+import { isNil } from 'lodash';
 import { DataSource, EntityManager, In } from 'typeorm';
 
 import { CategoryEntity, CommentEntity, PostEntity } from '@/modules/content/entities';
@@ -13,6 +14,11 @@ import { getRandListData, panic } from '@/modules/core/helpers';
 import { BaseSeeder } from '@/modules/database/base';
 
 import { DbFactory } from '@/modules/database/types';
+
+import { UserEntity } from '@/modules/user/entities';
+import { getUserConfig } from '@/modules/user/helpers';
+
+import { UserConfig } from '@/modules/user/types';
 
 import { getCustomRepository } from '../../modules/database/helpers';
 import { categories, CategoryData, PostData, posts } from '../factories/content.data';
@@ -29,7 +35,12 @@ export default class ContentSeeder extends BaseSeeder {
         await this.loadPosts(posts);
     }
 
-    private async genRandomComments(post: PostEntity, count: number, parent?: CommentEntity) {
+    private async genRandomComments(
+        post: PostEntity,
+        count: number,
+        parent?: CommentEntity,
+        author?: ClassToPlain<UserEntity>,
+    ) {
         const comments: CommentEntity[] = [];
         for (let i = 0; i < count; i++) {
             const comment = new CommentEntity();
@@ -38,12 +49,16 @@ export default class ContentSeeder extends BaseSeeder {
             if (parent) {
                 comment.parent = parent;
             }
+            if (author) {
+                comment.author = author;
+            }
             comments.push(await this.em.save(comment));
             if (Math.random() >= 0.8) {
                 comment.children = await this.genRandomComments(
                     post,
                     Math.floor(Math.random() * 2),
                     comment,
+                    author,
                 );
                 await this.em.save(comment);
             }
@@ -68,6 +83,16 @@ export default class ContentSeeder extends BaseSeeder {
 
     private async loadPosts(data: PostData[]) {
         const allCates = await this.em.find(CategoryEntity);
+
+        // 默认以超级管理员为author
+        const admin: {
+            username: string;
+        } = await getUserConfig<UserConfig['super']>('super');
+        let author = await UserEntity.findOneBy({ username: admin.username });
+        if (isNil(author)) {
+            author = await UserEntity.save({ ...admin, isCreator: true });
+        }
+
         for (const item of data) {
             const filePath = path.join(__dirname, '../../assets/posts', item.contentFile);
             if (!existsSync(filePath)) {
@@ -80,6 +105,7 @@ export default class ContentSeeder extends BaseSeeder {
                 title: item.title,
                 body: fs.readFileSync(filePath, 'utf8'),
                 isPublished: true,
+                author,
             };
             if (item.summary) {
                 options.summary = item.summary;
@@ -94,13 +120,14 @@ export default class ContentSeeder extends BaseSeeder {
             }
             const post = await this.factorier(PostEntity)(options).create();
 
-            await this.genRandomComments(post, Math.floor(Math.random() * 5));
+            await this.genRandomComments(post, Math.floor(Math.random() * 5), null, author);
         }
         const redoms = await this.factorier(PostEntity)<IPostFactoryOptions>({
             categories: getRandListData(allCates),
+            author,
         }).createMany(100);
         for (const redom of redoms) {
-            await this.genRandomComments(redom, Math.floor(Math.random() * 2));
+            await this.genRandomComments(redom, Math.floor(Math.random() * 2), null, author);
         }
     }
 }

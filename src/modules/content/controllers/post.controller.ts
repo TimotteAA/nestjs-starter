@@ -1,6 +1,6 @@
-import { Controller } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { BaseControllerWithTrash } from '@/modules/restful/base';
 import { Crud, Depends } from '@/modules/restful/decorators';
@@ -57,7 +57,9 @@ export class PostController extends BaseControllerWithTrash<PostService> {
         super(service);
     }
 
-    async create(@ReqUser() user: ClassToPlain<UserEntity>, data: CreatePostDto) {
+    @ApiOperation({ description: '发表文章' })
+    @Post()
+    async create(@Body() data: CreatePostDto, @ReqUser() user: ClassToPlain<UserEntity>) {
         return this.service.create(data, user.id);
     }
 }

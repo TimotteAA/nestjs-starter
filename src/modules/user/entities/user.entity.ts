@@ -9,17 +9,26 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-import { CommentEntity, PostEntity } from '@/modules/content/entities';
 import { BaseEntity } from '@/modules/database/base';
 
+import { AddRelations } from '@/modules/database/decorators';
+import { DynamicRelation } from '@/modules/database/types';
+
+import { getUserConfig } from '../helpers';
+
 import { AccessTokenEntity } from './access-token.entity';
+
+const relations = () => getUserConfig<DynamicRelation[]>('relations');
 
 /**
  * 用户模型
  */
+@AddRelations(relations)
 @Exclude()
 @Entity('users')
 export class UserEntity extends BaseEntity {
+    [key: string]: any;
+
     @Expose()
     @Column({
         comment: '姓名',
@@ -75,13 +84,13 @@ export class UserEntity extends BaseEntity {
     @Column({ comment: '是否是超级管理员用户', default: false })
     isCreator?: boolean;
 
-    @OneToMany(() => PostEntity, (post: PostEntity) => post.author, {
-        cascade: true,
-    })
-    posts: PostEntity[];
+    // @OneToMany(() => PostEntity, (post: PostEntity) => post.author, {
+    //     cascade: true,
+    // })
+    // posts: PostEntity[];
 
-    @OneToMany(() => CommentEntity, (c: CommentEntity) => c.author, {
-        cascade: true,
-    })
-    comments: CommentEntity[];
+    // @OneToMany(() => CommentEntity, (c: CommentEntity) => c.author, {
+    //     cascade: true,
+    // })
+    // comments: CommentEntity[];
 }

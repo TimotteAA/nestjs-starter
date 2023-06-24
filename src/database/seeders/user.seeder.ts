@@ -11,7 +11,7 @@ import { getCustomRepository } from '../../modules/database/helpers';
 import { IUserFactoryOptions } from '../factories/user.factory';
 
 export default class UserSeeder extends BaseSeeder {
-    protected truncates = [AccessTokenEntity, RefreshTokenEntity, UserEntity];
+    protected truncates = [UserEntity, AccessTokenEntity, RefreshTokenEntity];
 
     protected factorier!: DbFactory;
 
@@ -23,12 +23,13 @@ export default class UserSeeder extends BaseSeeder {
     private async loadUsers() {
         const repository = getCustomRepository(this.dataSource, UserRepository);
         const userFactory = this.factorier(UserEntity);
-        const creator = await repository.findOneBy({ username: 'pincman' });
+        // super user
+        const creator = await repository.findOneBy({ username: 'timotte' });
         if (isNil(creator)) {
             await userFactory<IUserFactoryOptions>({
-                username: 'pincman',
-                nickname: 'pincman',
-                password: '123456aA$',
+                username: 'timotte',
+                password: '123456aA!',
+                isCreator: true,
             }).create({}, 'username');
         }
         const count = await repository.count();

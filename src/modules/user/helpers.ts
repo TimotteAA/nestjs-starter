@@ -1,6 +1,9 @@
 import bcrypt from 'bcrypt';
 import { isNil, toNumber } from 'lodash';
 
+import { OneToMany } from 'typeorm';
+
+import { CommentEntity, PostEntity } from '../content/entities';
 import { App } from '../core/app';
 
 import { Configure } from '../core/configure';
@@ -60,11 +63,11 @@ export const defaultUserConfig = (configure: Configure): UserConfig => {
     return {
         hash: 10,
         jwt: {
-            secret: configure.env('USER_TOKEN_SECRET', 'my-refresh-secret'),
-            token_expired: configure.env('USER_TOKEN_EXPIRED', (v) => toNumber(v), 3600),
-            refresh_secret: configure.env('USER_REFRESH_TOKEN_SECRET', 'my-refresh-secret'),
+            secret: configure.env('SECRET'),
+            token_expired: configure.env('TOKEN_EXPIRED', (v) => toNumber(v), 3600),
+            refresh_secret: configure.env('REFRESH_SECRET'),
             refresh_token_expired: configure.env(
-                'USER_REFRESH_TOKEN_EXPIRED',
+                'REFRESH_TOKEN_EXPIRED',
                 (v) => toNumber(v),
                 3600 * 30,
             ),
@@ -117,6 +120,33 @@ export const defaultUserConfig = (configure: Configure): UserConfig => {
             age: captchaTimeConfig.age,
             limit: captchaTimeConfig.limit,
         },
+        super: {
+            username: configure.env('SUPER_USERNAME'),
+            password: configure.env('SUPER_PASSWORD'),
+        },
+        // user字段是一
+        relations: [
+            {
+                column: 'posts',
+                relation: OneToMany(
+                    () => PostEntity,
+                    (post: PostEntity) => post.author,
+                    {
+                        cascade: true,
+                    },
+                ),
+            },
+            {
+                column: 'comments',
+                relation: OneToMany(
+                    () => CommentEntity,
+                    (comment: CommentEntity) => comment.author,
+                    {
+                        cascade: true,
+                    },
+                ),
+            },
+        ],
     };
 };
 

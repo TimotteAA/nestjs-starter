@@ -94,7 +94,11 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
         let qb = this.addOrderByQuery(this.buildBaseQB(), orderBy);
         qb.where(`${escapeAlias(this.qbName)}.${escapeColumn(parentPropertyName)} IS NULL`);
         FindOptionsUtils.applyOptionsToTreeQueryBuilder(qb, pick(options, ['relations', 'depth']));
-        qb = addQuery ? await addQuery(qb) : qb;
+        // qb = addQuery ? await addQuery(qb) : qb;
+        if (!isNil(addQuery)) {
+            qb = await addQuery(qb);
+        }
+        // console.log(addQuery);
         if (withTrashed) {
             qb.withDeleted();
             if (onlyTrashed) qb.where(`${this.qbName}.deletedAt IS NOT NULL`);

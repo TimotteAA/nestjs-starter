@@ -90,10 +90,12 @@ export class TokenService {
      * @param value
      */
     async checkAccessToken(value: string) {
-        return AccessTokenEntity.findOne({
+        const res = await AccessTokenEntity.findOne({
             where: { value },
             relations: ['user', 'refreshToken'],
         });
+        console.log('res', res);
+        return res;
     }
 
     /**

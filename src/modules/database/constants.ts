@@ -28,3 +28,5 @@ export enum TreeChildrenResolve {
     UP = 'up',
     ROOT = 'root',
 }
+
+export const DYNAMIC_RELATIONS = 'dynamic_relations';

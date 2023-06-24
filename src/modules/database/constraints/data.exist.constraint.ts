@@ -24,6 +24,7 @@ export class DataExistConstraint implements ValidatorConstraintInterface {
     constructor(private dataSource: DataSource) {}
 
     async validate(value: string, args: ValidationArguments) {
+        // console.log('value', value);
         let repo: Repository<any>;
         if (!value) return true;
         // 默认对比字段是id

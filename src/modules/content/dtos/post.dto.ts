@@ -72,15 +72,18 @@ export class QueryPostDto extends ListWithTrashedQueryDto {
     @IsOptional()
     orderBy?: PostOrderType;
 
+    @ApiPropertyOptional({
+        description: '文章作者ID',
+    })
     @IsDataExist(UserEntity, {
         // always: true,
-        message: '用不存在',
+        message: '用户不存在',
     })
     @IsUUID(undefined, {
         message: '用户id格式错误',
     })
     @IsOptional({ always: true })
-    user?: UserEntity;
+    author?: UserEntity;
 }
 
 /**

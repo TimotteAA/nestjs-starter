@@ -13,10 +13,12 @@ import { addEntities, addSubscribers } from '../database/helpers';
 import { SEND_CAPTCHA_QUEUE } from './constants';
 import * as entities from './entities';
 import * as guards from './guards';
+import { getUserConfig } from './helpers';
 import * as queues from './queue';
 import * as repositories from './repositories';
+import { UserRepository } from './repositories';
 import * as services from './services';
-import * as strategies from './strategies';
+import { JwtStrategy, LocalStrategy } from './strategies';
 import * as subscribers from './subscribers';
 import { UserConfig } from './types';
 
@@ -47,9 +49,19 @@ const jwtModuleRegister = (configure: Configure) => async (): Promise<JwtModuleO
     providers: [
         ...Object.values(services),
         ...(await addSubscribers(configure, Object.values(subscribers))),
-        ...Object.values(strategies),
         ...Object.values(guards),
         ...Object.values(queues),
+        LocalStrategy,
+        {
+            provide: JwtStrategy,
+            async useFactory(userRepo: UserRepository) {
+                const secret = await getUserConfig<string>('jwt.secret');
+                // console.log('secret', secret);
+                const jwtStrategy = new JwtStrategy(userRepo, secret);
+                return jwtStrategy;
+            },
+            inject: [UserRepository],
+        },
     ],
     exports: [
         ...Object.values(services),

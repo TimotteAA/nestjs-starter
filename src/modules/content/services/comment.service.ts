@@ -33,7 +33,15 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
     async findTrees(options: QueryCommentTreeDto = {}) {
         return this.repository.findTrees({
             addQuery: async (qb) => {
-                return isNil(options.post) ? qb : qb.where('post.id = :id', { id: options.post });
+                console.log(options);
+                let queryBuilder = qb;
+                queryBuilder = isNil(options.post)
+                    ? qb
+                    : qb.where('post.id = :id', { id: options.post });
+                queryBuilder = isNil(options.author)
+                    ? qb
+                    : qb.where('author.id = :id', { id: options.author });
+                return queryBuilder;
             },
         });
     }
@@ -44,16 +52,19 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
      */
     async paginate(options: QueryCommentDto) {
         const { post, author } = options;
+        // console.log(author);
         const addQuery = async (qb: SelectQueryBuilder<CommentEntity>) => {
             const condition: Record<string, any> = {};
             if (!isNil(post)) condition.post = post;
             if (!isNil(author)) condition.author.id = author;
             return Object.keys(condition).length > 0 ? qb.andWhere(condition) : qb;
         };
-        return super.paginate({
-            ...options,
+        return super.paginate(
+            {
+                ...options,
+            },
             addQuery,
-        });
+        );
     }
 
     /**

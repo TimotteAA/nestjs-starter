@@ -22,7 +22,7 @@ import { deepMerge, createConnectionOptions, panic } from '../core/helpers';
 
 import { ConfigureFactory, ConfigureRegister } from '../core/types';
 
-import { CUSTOM_REPOSITORY_METADATA } from './constants';
+import { CUSTOM_REPOSITORY_METADATA, DYNAMIC_RELATIONS } from './constants';
 
 import { FactoryResolver } from './resolver/factory.resolver';
 import {
@@ -30,6 +30,7 @@ import {
     DbConfigOptions,
     DbFactoryBuilder,
     DefineFactory,
+    DynamicRelation,
     FactoryOptions,
     OrderQueryType,
     PaginateOptions,
@@ -213,7 +214,43 @@ export const addEntities = async (
     const dbConfig = database.connections.find(({ name }) => name === dataSource);
     // eslint-disable-next-line prettier/prettier, prefer-template
     if (isNil(dbConfig)) throw new Error(`Database connection named ${dataSource} not exists!`);
+    // 在config中配置的entities
     const oldEntities = (dbConfig.entities ?? []) as ObjectLiteral[];
+    // 增强后的entities
+    const es = await Promise.all(
+        entities.map(async (entity) => {
+            // 装饰器的动态关联
+            const registerRelation = Reflect.getMetadata(DYNAMIC_RELATIONS, entity);
+            // 传入的entity是不是类
+            if (
+                'prototype' in entity &&
+                !isNil(registerRelation) &&
+                typeof registerRelation === 'function'
+            ) {
+                // relations
+                const relations: DynamicRelation[] = await registerRelation();
+                relations.forEach(({ column, relation, others }) => {
+                    // 定义字段
+                    const property = Object.getOwnPropertyDescriptor(entity.prototype, column);
+                    if (isNil(property)) {
+                        Object.defineProperty(entity.prototype, column, {
+                            writable: true,
+                        });
+                    }
+                    // 执行装饰器
+                    relation(entity.prototype, column);
+                    // 别的装饰器
+                    if (!isNil(others)) {
+                        for (const other of others) {
+                            other(entity.prototype, column);
+                        }
+                    }
+                });
+            }
+            return entity;
+        }),
+    );
+    // console.log('es', es);
     /**
      * 更新数据库配置,添加上新的模型
      */
@@ -223,7 +260,7 @@ export const addEntities = async (
             connection.name === dataSource
                 ? {
                       ...connection,
-                      entities: [...entities, ...oldEntities],
+                      entities: [...es, ...oldEntities],
                   }
                 : connection,
         ),

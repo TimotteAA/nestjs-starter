@@ -3,6 +3,7 @@ import { Faker } from '@faker-js/faker';
 import { CategoryEntity, CommentEntity, PostEntity } from '@/modules/content/entities';
 import { getTime } from '@/modules/core/helpers';
 import { defineFactory } from '@/modules/database/helpers';
+import { UserEntity } from '@/modules/user/entities';
 
 export type IPostFactoryOptions = Partial<{
     title: string;
@@ -11,13 +12,14 @@ export type IPostFactoryOptions = Partial<{
     isPublished: boolean;
     categories: CategoryEntity[];
     comments: CommentEntity[];
+    author?: ClassToPlain<UserEntity>;
 }>;
 export const ContentFactory = defineFactory(
     PostEntity,
     async (faker: Faker, options: IPostFactoryOptions) => {
         faker.setLocale('zh_CN');
         const post = new PostEntity();
-        const { title, summary, body, categories } = options;
+        const { title, summary, body, categories, author } = options;
         post.title = title ?? faker.lorem.sentence(Math.floor(Math.random() * 10) + 6);
         if (summary) {
             post.summary = options.summary;
@@ -29,6 +31,9 @@ export const ContentFactory = defineFactory(
         }
         if (categories) {
             post.categories = categories;
+        }
+        if (author) {
+            post.author = author;
         }
         return post;
     },

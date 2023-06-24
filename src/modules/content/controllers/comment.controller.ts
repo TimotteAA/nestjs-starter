@@ -1,4 +1,4 @@
-import { Controller, Get, Query, SerializeOptions } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, SerializeOptions } from '@nestjs/common';
 
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -58,7 +58,9 @@ export class CommentController extends BaseController<CommentService> {
         return this.service.findTrees(query);
     }
 
-    async create(@ReqUser() user: ClassToPlain<UserEntity>, data: CreateCommentDto) {
+    @Post()
+    @ApiOperation({ summary: '添加评论' })
+    async create(@ReqUser() user: ClassToPlain<UserEntity>, @Body() data: CreateCommentDto) {
         return this.service.create(data, user.id);
     }
 }

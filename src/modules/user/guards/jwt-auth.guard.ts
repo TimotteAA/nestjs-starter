@@ -47,23 +47,27 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         // 如果请求头不含有authorization字段则认证失败
         // token value
         const requestToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
-        if (isNil(requestToken) && !allowGuest) return false;
+        // console.log('requestToken', requestToken);
+        if (isNil(requestToken)) return false;
         // 根据token字符串，去判断数据库中token是否存在,如果不存在则认证失败
-        const accessToken = isNil(requestToken)
-            ? undefined
-            : await this.tokenService.checkAccessToken(requestToken!);
+        // const accessToken = isNil(requestToken)
+        //     ? undefined
+        //     : await this.tokenService.checkAccessToken(requestToken!);
+        const accessToken = await this.tokenService.checkAccessToken(requestToken);
         // console.log('accessToken', accessToken);
-        if (isNil(accessToken) && !allowGuest) throw new UnauthorizedException();
+        if (isNil(accessToken)) throw new UnauthorizedException();
         try {
             // 原生的检测token是否为损坏或过期的无效状态,如果无效则尝试刷新token
             const result = await super.canActivate(context);
-            if (allowGuest) return true;
+            // console.log('result', result);
+            // if (allowGuest) return true;
             return result as boolean;
         } catch (e) {
             // 尝试通过refreshToken刷新token
             // 刷新成功则给请求头更换新的token
             // 并给响应头添加新的token和refreshtoken
             if (!isNil(accessToken)) {
+                console.log(1231231231);
                 const token = await this.tokenService.refreshToken(accessToken, response);
                 if (isNil(token) && !allowGuest) return false;
                 if (token.accessToken) {

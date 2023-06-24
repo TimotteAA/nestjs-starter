@@ -1,3 +1,4 @@
+import { DynamicRelation } from '../database/types';
 import { SendResult } from '../tencent-os/types';
 
 import { CaptchaType, CaptchaActionType } from './constants';
@@ -10,6 +11,11 @@ export interface UserConfig {
     hash: number;
     jwt: JwtConfig;
     captcha: CaptchaConfig;
+    super: {
+        username: string;
+        password: string;
+    };
+    relations?: DynamicRelation[];
 }
 
 /**

@@ -85,6 +85,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
      * @param data
      */
     async create(data: CreatePostDto, author: string) {
+        // console.log(data);
         const createPostDto = {
             ...data,
             // 文章所属分类
@@ -176,7 +177,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         options: FindParams,
         callback?: QueryHook<PostEntity>,
     ) {
-        const { category, orderBy, isPublished, search, user } = options;
+        const { category, orderBy, isPublished, search, author } = options;
         const qb = await super.buildListQB(querBuilder, options, callback);
         if (typeof isPublished === 'boolean') {
             isPublished
@@ -210,10 +211,10 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                     });
             }
         }
-        if (!isNil(user)) {
+        if (!isNil(author)) {
             qb.andWhere({
-                user: {
-                    id: user,
+                author: {
+                    id: author,
                 },
             });
         }

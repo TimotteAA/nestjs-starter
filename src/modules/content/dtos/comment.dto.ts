@@ -41,7 +41,7 @@ export class QueryCommentDto extends ListQueryDto {
  * 评论树查询
  */
 @DtoValidation({ type: 'query' })
-export class QueryCommentTreeDto extends PickType(QueryCommentDto, ['post']) {}
+export class QueryCommentTreeDto extends PickType(QueryCommentDto, ['post', 'author']) {}
 
 /**
  * 评论添加验证

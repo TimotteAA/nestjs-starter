@@ -57,7 +57,9 @@ export abstract class BaseService<
                 ...options,
                 withTrashed,
                 onlyTrashed,
-            });
+                // 在tree下，callback似乎没传下去
+                callback,
+            } as any);
             return this.repository.toFlatTrees(tree);
         }
         const qb = await this.buildListQB(this.repository.buildBaseQB(), options, callback);
@@ -75,6 +77,7 @@ export abstract class BaseService<
     ): Promise<PaginateReturn<E>> {
         const queryOptions = (options ?? {}) as P;
         if (this.repository instanceof BaseTreeRepository) {
+            console.log(12345);
             const data = await this.list(queryOptions, callback);
             return manualPaginate(options, data) as PaginateReturn<E>;
         }

@@ -5,6 +5,7 @@ import { ModuleBuilder } from '../core/decorators';
 import { DatabaseModule } from '../database/database.module';
 import { addEntities, addSubscribers } from '../database/helpers';
 
+import { UserService } from '../user/services';
 import { UserModule } from '../user/user.module';
 
 import * as entities from './entities';
@@ -28,18 +29,21 @@ import { SearchType } from './types';
                 PostRepository,
                 CategoryRepository,
                 CategoryService,
+                UserService,
                 { token: SearchService, optional: true },
             ],
             useFactory(
                 postRepository: PostRepository,
                 categoryRepository: CategoryRepository,
                 categoryService: CategoryService,
+                userService: UserService,
                 searchService?: SearchService,
             ) {
                 return new PostService(
                     postRepository,
                     categoryRepository,
                     categoryService,
+                    userService,
                     searchService,
                     searchType,
                 );
