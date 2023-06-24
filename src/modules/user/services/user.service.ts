@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { isNil } from 'lodash';
 import { EntityNotFoundError, SelectQueryBuilder, DataSource } from 'typeorm';
 
 import { Configure } from '@/modules/core/configure';
@@ -7,13 +8,40 @@ import { QueryHook } from '@/modules/database/types';
 
 import { CreateUserDto, QueryUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UserEntity } from '../entities/user.entity';
+import { getUserConfig } from '../helpers';
 import { UserRepository } from '../repositories/user.repository';
+import { UserConfig } from '../types';
 
 /**
  * 用户管理服务
  */
 @Injectable()
-export class UserService extends BaseService<UserEntity, UserRepository> {
+export class UserService extends BaseService<UserEntity, UserRepository> implements OnModuleInit {
+    async onModuleInit() {
+        // 在运行cli时防止报错
+        // console.log(await this.configure.get("app"));
+        if (!(await this.configure.get<boolean>('app.server', false))) return null;
+        // console.log("user module init>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        const adminConf = await getUserConfig<UserConfig['super']>('super');
+        const admin = await this.repository.findOneBy({
+            username: adminConf.username,
+        } as any);
+        if (!isNil(admin)) {
+            if (!admin.isCreator) {
+                await this.repository.save({ id: admin.id, isCreator: true });
+                return this.findOneByCredential(admin.username);
+            }
+            return admin;
+        }
+        const res = await this.repository.save({
+            ...adminConf,
+            isCreator: true,
+            phone: '+8617301780942',
+            email: '1273871844@qq.com',
+        });
+        return res;
+    }
+
     protected enable_trash = true;
 
     constructor(

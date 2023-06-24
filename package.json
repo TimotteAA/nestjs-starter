@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "3r": "link:",
+        "@casl/ability": "^6.5.0",
         "@elastic/elasticsearch": "^8.6.0",
         "@faker-js/faker": "^7.6.0",
         "@fastify/multipart": "^7.7.0",

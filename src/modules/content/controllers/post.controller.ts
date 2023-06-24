@@ -1,65 +1,45 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Param, Controller, Get, Query, SerializeOptions, ParseUUIDPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { omit } from 'lodash';
 
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-
-import { BaseControllerWithTrash } from '@/modules/restful/base';
-import { Crud, Depends } from '@/modules/restful/decorators';
-
-import { createHookOption } from '@/modules/restful/helpers';
-
-import { ReqUser } from '@/modules/user/decorators';
-
+import { SelectTrashMode } from '@/modules/database/constants';
+import { Depends } from '@/modules/restful/decorators';
+import { Guest, ReqUser } from '@/modules/user/decorators';
 import { UserEntity } from '@/modules/user/entities';
 
 import { ContentModule } from '../content.module';
-import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
+import { QueryPostDto } from '../dtos';
+
 import { PostService } from '../services/post.service';
 
-@ApiTags('文章')
+@ApiTags('前端文章接口')
 @Depends(ContentModule)
-@Crud(async () => ({
-    id: 'post',
-    enabled: [
-        {
-            name: 'list',
-            option: createHookOption({ summary: '文章查询,以分页模式展示', guest: true }),
-        },
-        {
-            name: 'detail',
-            option: createHookOption({ summary: '文章查询,以分页模式展示', guest: true }),
-        },
-        {
-            name: 'create',
-            option: createHookOption('创建文章'),
-        },
-        {
-            name: 'update',
-            option: createHookOption('更新文章'),
-        },
-        {
-            name: 'delete',
-            option: createHookOption('删除文章'),
-        },
-        {
-            name: 'restore',
-            option: createHookOption('恢复文章'),
-        },
-    ],
-    dtos: {
-        create: CreatePostDto,
-        update: UpdatePostDto,
-        list: QueryPostDto,
-    },
-}))
 @Controller('posts')
-export class PostController extends BaseControllerWithTrash<PostService> {
-    constructor(protected service: PostService) {
-        super(service);
+export class PostController {
+    public constructor(protected service: PostService) {}
+
+    @ApiOperation({
+        summary: '查询文章列表',
+    })
+    @Guest()
+    @Get()
+    @SerializeOptions({ groups: ['post-list'] })
+    async list(@Query() data: QueryPostDto, @ReqUser() user: ClassToPlain<UserEntity>) {
+        data.trashed = SelectTrashMode.NONE;
+        return this.service.paginate(omit(data, ['author', 'isPublished']));
     }
 
-    @ApiOperation({ description: '发表文章' })
-    @Post()
-    async create(@Body() data: CreatePostDto, @ReqUser() user: ClassToPlain<UserEntity>) {
-        return this.service.create(data, user.id);
+    @ApiOperation({
+        summary: '查询文章详情',
+    })
+    @Get(':id')
+    @Guest()
+    @SerializeOptions({ groups: ['post-detail'] })
+    async detail(
+        @Param('id', new ParseUUIDPipe())
+        id: string,
+        @ReqUser() author: ClassToPlain<UserEntity>,
+    ) {
+        return this.service.detail(id);
     }
 }

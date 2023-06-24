@@ -7,6 +7,9 @@ import { camelCase, isNil, omit, trim, upperFirst, isFunction } from 'lodash';
 import { Configure } from '@/modules/core/configure';
 import { CreateModule, isAsyncFn } from '@/modules/core/helpers';
 
+import { ManualPermission } from '../rbac/decorators';
+import { PermissionChecker } from '../rbac/types';
+
 import { CONTROLLER_DEPENDS, CRUD_OPTIONS_REGISTER } from './constants';
 import { registerCrud } from './crud';
 
@@ -66,10 +69,10 @@ function echoDocs(name: string, doc: ApiDocOption, appUrl: string) {
  * @param option
  */
 export function createHookOption(
-    option: { guest?: boolean; summary?: string } | string = {},
+    option: { guest?: boolean; summary?: string; permissions?: PermissionChecker[] } | string = {},
 ): CrudMethodOption {
     const params = typeof option === 'string' ? { summary: option } : option;
-    const { guest: allowGuest, summary } = params;
+    const { guest: allowGuest, summary, permissions } = params;
     return {
         allowGuest,
         hook: (target, method) => {
@@ -86,6 +89,9 @@ export function createHookOption(
                     method,
                     Object.getOwnPropertyDescriptor(target.prototype, method),
                 );
+            }
+            if (!isNil(permissions)) {
+                ManualPermission(target, method, permissions);
             }
         },
     };

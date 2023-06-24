@@ -5,6 +5,8 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    JoinTable,
+    ManyToMany,
     OneToMany,
     UpdateDateColumn,
 } from 'typeorm';
@@ -13,6 +15,8 @@ import { BaseEntity } from '@/modules/database/base';
 
 import { AddRelations } from '@/modules/database/decorators';
 import { DynamicRelation } from '@/modules/database/types';
+
+import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
 
 import { getUserConfig } from '../helpers';
 
@@ -71,7 +75,6 @@ export class UserEntity extends BaseEntity {
     accessTokens!: AccessTokenEntity[];
 
     @Expose()
-    @Expose()
     @Type(() => Date)
     @DeleteDateColumn({
         comment: '删除时间',
@@ -83,6 +86,21 @@ export class UserEntity extends BaseEntity {
 
     @Column({ comment: '是否是超级管理员用户', default: false })
     isCreator?: boolean;
+
+    @Expose({ groups: ['user-detail'] })
+    @Type(() => PermissionEntity)
+    @ManyToMany(() => PermissionEntity, (p) => p.users, {
+        cascade: true,
+    })
+    @JoinTable()
+    permissions!: PermissionEntity[];
+
+    @Expose({ groups: ['user-detail'] })
+    @ManyToMany(() => RoleEntity, (role: RoleEntity) => role.users, {
+        cascade: true,
+    })
+    @JoinTable()
+    roles!: RoleEntity[];
 
     // @OneToMany(() => PostEntity, (post: PostEntity) => post.author, {
     //     cascade: true,

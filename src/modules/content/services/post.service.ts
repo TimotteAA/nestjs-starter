@@ -12,7 +12,8 @@ import { UserService } from '@/modules/user/services';
 
 import { PostOrderType } from '../constants';
 
-import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos/post.dto';
+import { ManageCreatePostDto, ManageUpdatePostDto } from '../dtos/manage/post.dto';
+import { QueryPostDto } from '../dtos/post.dto';
 import { PostEntity } from '../entities/post.entity';
 import { CategoryRepository } from '../repositories/category.repository';
 import { PostRepository } from '../repositories/post.repository';
@@ -84,7 +85,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
      * 创建文章
      * @param data
      */
-    async create(data: CreatePostDto, author: string) {
+    async create(data: ManageCreatePostDto, author: string) {
         // console.log(data);
         const createPostDto = {
             ...data,
@@ -112,7 +113,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
      * 更新文章
      * @param data
      */
-    async update(data: UpdatePostDto) {
+    async update(data: ManageUpdatePostDto) {
         const post = await this.detail(data.id);
         if (isArray(data.categories)) {
             // 更新文章所属分类

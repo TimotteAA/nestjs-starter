@@ -5,6 +5,9 @@ import { useContainer } from 'class-validator';
 
 import { isNil } from 'lodash';
 
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+
 import { Restful } from '../restful/restful';
 import { ApiConfig } from '../restful/types';
 
@@ -89,6 +92,10 @@ export class App {
             configure.add(key, configs[key]);
         }
         await configure.sync();
+        // 判断是否启动cli
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { _ = [] } = yargs(hideBin(process.argv)).argv as any;
+        configure.set('app.server', !!(_.length <= 0 || _[0] === 'start'));
         let appUrl = await configure.get('app.url', undefined);
         if (isNil(appUrl)) {
             const host = await configure.get<string>('app.host');
@@ -108,3 +115,6 @@ export class App {
         return configure;
     }
 }
+// function hideBin(argv: string[]): string | readonly string[] {
+//     throw new Error('Function not implemented.');
+// }
