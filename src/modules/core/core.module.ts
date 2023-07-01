@@ -1,3 +1,5 @@
+import { LoggerModule } from '../logger/logger.module';
+
 import { Configure } from './configure';
 
 import { ModuleBuilder } from './decorators';
@@ -14,5 +16,6 @@ import { ModuleBuilder } from './decorators';
         },
     ],
     exports: [Configure],
+    imports: [LoggerModule.forRoot({ level: 'info' })],
 }))
 export class CoreModule {}

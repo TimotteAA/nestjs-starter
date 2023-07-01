@@ -8,11 +8,14 @@ import { ModuleBuilder } from '../core/decorators';
 
 import { panic } from '../core/helpers';
 
+import { LoggerService } from '../logger/services';
+
 import * as commands from './commands';
 
 import { CUSTOM_REPOSITORY_METADATA } from './constants';
 import { DataExistConstraint, UniqueExistContraint } from './constraints';
 import { UniqueConstraint } from './constraints/unique.constraint';
+import { TypeOrmLogger } from './logger';
 import { DbConfig } from './types';
 
 @ModuleBuilder(async (configure) => {
@@ -23,7 +26,21 @@ import { DbConfig } from './types';
     }
     const { connections } = await configure.get<DbConfig>('database');
     for (const dbOption of connections) {
-        imports.push(TypeOrmModule.forRoot(dbOption as TypeOrmModuleOptions));
+        // imports.push(TypeOrmModule.forRoot(dbOption as TypeOrmModuleOptions));
+        imports.push(
+            TypeOrmModule.forRootAsync({
+                inject: [LoggerService],
+                useFactory: (loggerService: LoggerService) => ({
+                    ...(dbOption as TypeOrmModuleOptions),
+                    logger: new TypeOrmLogger(loggerService),
+                }),
+                dataSourceFactory: async (options) => {
+                    const dataSource = await new DataSource(options).initialize();
+                    return dataSource;
+                },
+            }),
+        );
+        console.log('dbOption', dbOption);
     }
     const providers: ModuleMetadata['providers'] = [
         DataExistConstraint,

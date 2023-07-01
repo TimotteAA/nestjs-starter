@@ -118,11 +118,11 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     }
 
     async onApplicationBootstrap() {
-        console.log(
-            'app start ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
-        );
-        // 在运行cli时防止报错
-        console.log(await this.configure.get<boolean>('app'));
+        // console.log(
+        //     'app start ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
+        // );
+        // // 在运行cli时防止报错
+        // console.log(await this.configure.get<boolean>('app'));
         if (!(await this.configure.get<boolean>('app.server', false))) return;
 
         const queryRunner = this.dataSource.createQueryRunner();

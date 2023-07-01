@@ -34,7 +34,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             context.getHandler(),
             context.getClass(),
         ]);
-        console.log('jwt guard');
         // console.log('crudGest', crudGuest);
         const allowGuest = crudGuest ?? defaultGuest;
         if (allowGuest) return true;

@@ -7,6 +7,7 @@ import { camelCase, isNil, omit, trim, upperFirst, isFunction } from 'lodash';
 import { Configure } from '@/modules/core/configure';
 import { CreateModule, isAsyncFn } from '@/modules/core/helpers';
 
+import { LoggerService } from '../logger/services';
 import { ManualPermission } from '../rbac/decorators';
 import { PermissionChecker } from '../rbac/types';
 
@@ -20,11 +21,13 @@ import { CrudMethodOption, ApiDocOption, ApiRouteOption } from './types';
  * 输出API和DOC地址
  * @param restful
  */
-export async function echoApi(configure: Configure, restful: Restful) {
+export async function echoApi(configure: Configure, restful: Restful, logger: LoggerService) {
     const appUrl = await configure.get<string>('app.url');
     const apiUrl = await configure.get<string>('app.api');
-    console.log(`- ApiUrl: ${chalk.green.underline(apiUrl)}`);
-    console.log('- ApiDocs:');
+    // console.log(`- ApiUrl: ${chalk.green.underline(apiUrl)}`);
+    logger.info(`- ApiUrl: ${chalk.green.underline(apiUrl)}`, 'app启动成功');
+    // console.log('- ApiDocs:');
+    logger.info('- ApiDocs:', 'app启动成功，文档地址');
     const { default: defaultDoc, ...docs } = restful.docs;
     echoDocs('default', defaultDoc, appUrl);
     for (const [name, doc] of Object.entries(docs)) {
