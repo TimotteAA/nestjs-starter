@@ -20,6 +20,9 @@ export class TypeOrmLogger implements Logger {
             case 'warn':
                 this.logger.warn(message);
                 break;
+            default:
+                this.logger.log(message);
+                break;
         }
     }
 

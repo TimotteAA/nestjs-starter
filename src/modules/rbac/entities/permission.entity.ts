@@ -1,8 +1,9 @@
 import { AbilityTuple, MongoQuery, RawRuleFrom } from '@casl/ability';
 
 import { Exclude, Expose } from 'class-transformer';
-import { BaseEntity, Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 
+import { BaseEntity } from '@/modules/database/base';
 import { UserEntity } from '@/modules/user/entities';
 
 import { RoleEntity } from './role.entity';
@@ -13,10 +14,6 @@ export class PermissionEntity<
     A extends AbilityTuple = AbilityTuple,
     C extends MongoQuery = MongoQuery,
 > extends BaseEntity {
-    @Expose()
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
-
     @Expose()
     @Column({ comment: '权限名' })
     name!: string;
@@ -38,7 +35,9 @@ export class PermissionEntity<
     @JoinTable()
     roles!: RoleEntity[];
 
-    @ManyToMany(() => UserEntity, (user: UserEntity) => user.permissions)
+    @ManyToMany(() => UserEntity, (user: UserEntity) => user.permissions, {
+        onDelete: 'NO ACTION',
+    })
     @JoinTable()
     users!: UserEntity[];
 

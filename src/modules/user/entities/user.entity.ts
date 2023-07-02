@@ -16,7 +16,7 @@ import { BaseEntity } from '@/modules/database/base';
 import { AddRelations } from '@/modules/database/decorators';
 import { DynamicRelation } from '@/modules/database/types';
 
-import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
+import { MenuEntity, PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
 
 import { getUserConfig } from '../helpers';
 
@@ -102,13 +102,10 @@ export class UserEntity extends BaseEntity {
     @JoinTable()
     roles!: RoleEntity[];
 
-    // @OneToMany(() => PostEntity, (post: PostEntity) => post.author, {
-    //     cascade: true,
-    // })
-    // posts: PostEntity[];
-
-    // @OneToMany(() => CommentEntity, (c: CommentEntity) => c.author, {
-    //     cascade: true,
-    // })
-    // comments: CommentEntity[];
+    @Expose({ groups: ['user-detail'] })
+    @ManyToMany(() => MenuEntity, (menu: MenuEntity) => menu.users, {
+        cascade: true,
+    })
+    @JoinTable()
+    menus!: MenuEntity[];
 }

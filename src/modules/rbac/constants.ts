@@ -20,22 +20,22 @@ export enum PermissionAction {
     RESTORE = 'restore',
 }
 
-// /**
-//  * 菜单类型
-//  */
-// export enum MenuType {
-//     /**
-//      * 目录，顶级菜单项
-//      */
-//     DIRECTORY = 0,
-//     /**
-//      * 菜单项
-//      */
-//     MENU = 1,
-//     /**
-//      * CRUD权限
-//      */
-//     PERMISSION = 2,
-// }
+/**
+ * 菜单类型
+ */
+export enum MenuType {
+    /**
+     * 目录，顶级菜单项
+     */
+    DIRECTORY = 0,
+    /**
+     * 菜单项
+     */
+    MENU = 1,
+    /**
+     * CRUD权限
+     */
+    PERMISSION = 2,
+}
 
 export const PERMISSION_CHECKERS = 'permission_checkers';

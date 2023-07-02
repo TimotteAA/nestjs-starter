@@ -40,7 +40,7 @@ import { DbConfig } from './types';
                 },
             }),
         );
-        console.log('dbOption', dbOption);
+        // console.log('dbOption', dbOption);
     }
     const providers: ModuleMetadata['providers'] = [
         DataExistConstraint,
