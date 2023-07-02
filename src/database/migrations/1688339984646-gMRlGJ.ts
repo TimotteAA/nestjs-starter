@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class DrqNrm1688294765637 implements MigrationInterface {
-    name = 'DrqNrm1688294765637'
+export class GMRlGJ1688339984646 implements MigrationInterface {
+    name = 'GMRlGJ1688339984646'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE \`user_refresh_tokens\` (\`id\` varchar(36) NOT NULL, \`value\` varchar(500) NOT NULL, \`expired_at\` datetime NOT NULL COMMENT '令牌过期时间', \`createdAt\` datetime(6) NOT NULL COMMENT '令牌创建时间' DEFAULT CURRENT_TIMESTAMP(6), \`accessTokenId\` varchar(36) NULL, UNIQUE INDEX \`REL_1dfd080c2abf42198691b60ae3\` (\`accessTokenId\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
@@ -15,7 +15,6 @@ export class DrqNrm1688294765637 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE \`content_comments\` (\`id\` varchar(36) NOT NULL, \`body\` longtext NOT NULL COMMENT '评论内容', \`createdAt\` datetime(6) NOT NULL COMMENT '创建时间' DEFAULT CURRENT_TIMESTAMP(6), \`mpath\` varchar(255) NULL DEFAULT '', \`postId\` varchar(36) NOT NULL, \`authorId\` varchar(36) NOT NULL, \`parentId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`content_posts\` (\`id\` varchar(36) NOT NULL, \`title\` varchar(255) NOT NULL COMMENT '文章标题', \`body\` longtext NOT NULL COMMENT '文章内容', \`summary\` varchar(255) NULL COMMENT '文章描述', \`keywords\` text NULL COMMENT '关键字', \`type\` enum ('html', 'markdown') NOT NULL COMMENT '文章类型' DEFAULT 'markdown', \`publishedAt\` varchar(255) NULL COMMENT '发布时间', \`customOrder\` int NOT NULL COMMENT '自定义文章排序' DEFAULT '0', \`createdAt\` datetime(6) NOT NULL COMMENT '创建时间' DEFAULT CURRENT_TIMESTAMP(6), \`updatedAt\` datetime(6) NOT NULL COMMENT '更新时间' DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deletedAt\` datetime(6) NULL COMMENT '删除时间', \`authorId\` varchar(36) NOT NULL, FULLTEXT INDEX \`IDX_9ef6db9d13df6882d36c8af0cc\` (\`title\`), FULLTEXT INDEX \`IDX_e51068c39974ca11fae5d44c88\` (\`body\`), FULLTEXT INDEX \`IDX_f43723dc196c18767a3893a3f7\` (\`summary\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`rbac_menus_users_users\` (\`rbacMenusId\` varchar(36) NOT NULL, \`usersId\` varchar(36) NOT NULL, INDEX \`IDX_1055675c009c2163edf60b2ff2\` (\`rbacMenusId\`), INDEX \`IDX_a3850b795a32cab6382734d4e7\` (\`usersId\`), PRIMARY KEY (\`rbacMenusId\`, \`usersId\`)) ENGINE=InnoDB`);
-        await queryRunner.query(`CREATE TABLE \`rbac_menus_permissions_rbac_permission\` (\`rbacMenusId\` varchar(36) NOT NULL, \`rbacPermissionId\` varchar(36) NOT NULL, INDEX \`IDX_afdf419c2adf58deedc54af405\` (\`rbacMenusId\`), INDEX \`IDX_431bea2c249d97ab1f9d5748da\` (\`rbacPermissionId\`), PRIMARY KEY (\`rbacMenusId\`, \`rbacPermissionId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`rbac_permission_roles_rbac_roles\` (\`rbacPermissionId\` varchar(36) NOT NULL, \`rbacRolesId\` varchar(36) NOT NULL, INDEX \`IDX_729cfb6b1737c0b504e33f986f\` (\`rbacPermissionId\`), INDEX \`IDX_6915858cb1d029e3fc8989644a\` (\`rbacRolesId\`), PRIMARY KEY (\`rbacPermissionId\`, \`rbacRolesId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`rbac_permission_users_users\` (\`rbacPermissionId\` varchar(36) NOT NULL, \`usersId\` varchar(36) NOT NULL, INDEX \`IDX_261580b8cc66e2d093fd235d93\` (\`rbacPermissionId\`), INDEX \`IDX_a003c51e2bb1c2e47c9a7f959a\` (\`usersId\`), PRIMARY KEY (\`rbacPermissionId\`, \`usersId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`rbac_permission_menus_rbac_menus\` (\`rbacPermissionId\` varchar(36) NOT NULL, \`rbacMenusId\` varchar(36) NOT NULL, INDEX \`IDX_6d94c209511970ba2553cb1f59\` (\`rbacPermissionId\`), INDEX \`IDX_3d5b9bb7505a758049d88ce85a\` (\`rbacMenusId\`), PRIMARY KEY (\`rbacPermissionId\`, \`rbacMenusId\`)) ENGINE=InnoDB`);
@@ -32,15 +31,13 @@ export class DrqNrm1688294765637 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`content_comments\` ADD CONSTRAINT \`FK_4a3469cba32f2dd9712821285e5\` FOREIGN KEY (\`authorId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`content_comments\` ADD CONSTRAINT \`FK_982a849f676860e5d6beb607f20\` FOREIGN KEY (\`parentId\`) REFERENCES \`content_comments\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`content_posts\` ADD CONSTRAINT \`FK_8fcc2d81ced7b8ade2bbd151b1a\` FOREIGN KEY (\`authorId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE`);
-        await queryRunner.query(`ALTER TABLE \`rbac_menus_users_users\` ADD CONSTRAINT \`FK_1055675c009c2163edf60b2ff25\` FOREIGN KEY (\`rbacMenusId\`) REFERENCES \`rbac_menus\`(\`id\`) ON DELETE NO ACTION ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE \`rbac_menus_users_users\` ADD CONSTRAINT \`FK_1055675c009c2163edf60b2ff25\` FOREIGN KEY (\`rbacMenusId\`) REFERENCES \`rbac_menus\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE \`rbac_menus_users_users\` ADD CONSTRAINT \`FK_a3850b795a32cab6382734d4e7a\` FOREIGN KEY (\`usersId\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`rbac_menus_permissions_rbac_permission\` ADD CONSTRAINT \`FK_afdf419c2adf58deedc54af405d\` FOREIGN KEY (\`rbacMenusId\`) REFERENCES \`rbac_menus\`(\`id\`) ON DELETE NO ACTION ON UPDATE CASCADE`);
-        await queryRunner.query(`ALTER TABLE \`rbac_menus_permissions_rbac_permission\` ADD CONSTRAINT \`FK_431bea2c249d97ab1f9d5748daf\` FOREIGN KEY (\`rbacPermissionId\`) REFERENCES \`rbac_permission\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`rbac_permission_roles_rbac_roles\` ADD CONSTRAINT \`FK_729cfb6b1737c0b504e33f986fb\` FOREIGN KEY (\`rbacPermissionId\`) REFERENCES \`rbac_permission\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE \`rbac_permission_roles_rbac_roles\` ADD CONSTRAINT \`FK_6915858cb1d029e3fc8989644a1\` FOREIGN KEY (\`rbacRolesId\`) REFERENCES \`rbac_roles\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`rbac_permission_users_users\` ADD CONSTRAINT \`FK_261580b8cc66e2d093fd235d931\` FOREIGN KEY (\`rbacPermissionId\`) REFERENCES \`rbac_permission\`(\`id\`) ON DELETE NO ACTION ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE \`rbac_permission_users_users\` ADD CONSTRAINT \`FK_261580b8cc66e2d093fd235d931\` FOREIGN KEY (\`rbacPermissionId\`) REFERENCES \`rbac_permission\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE \`rbac_permission_users_users\` ADD CONSTRAINT \`FK_a003c51e2bb1c2e47c9a7f959af\` FOREIGN KEY (\`usersId\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`rbac_permission_menus_rbac_menus\` ADD CONSTRAINT \`FK_6d94c209511970ba2553cb1f59c\` FOREIGN KEY (\`rbacPermissionId\`) REFERENCES \`rbac_permission\`(\`id\`) ON DELETE NO ACTION ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE \`rbac_permission_menus_rbac_menus\` ADD CONSTRAINT \`FK_6d94c209511970ba2553cb1f59c\` FOREIGN KEY (\`rbacPermissionId\`) REFERENCES \`rbac_permission\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE \`rbac_permission_menus_rbac_menus\` ADD CONSTRAINT \`FK_3d5b9bb7505a758049d88ce85ac\` FOREIGN KEY (\`rbacMenusId\`) REFERENCES \`rbac_menus\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`rbac_roles_users_users\` ADD CONSTRAINT \`FK_3c933e8c0950496fa3a616e4b27\` FOREIGN KEY (\`rbacRolesId\`) REFERENCES \`rbac_roles\`(\`id\`) ON DELETE NO ACTION ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE \`rbac_roles_users_users\` ADD CONSTRAINT \`FK_789b5818a876ba2c4f058bdeb98\` FOREIGN KEY (\`usersId\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
@@ -71,8 +68,6 @@ export class DrqNrm1688294765637 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`rbac_permission_users_users\` DROP FOREIGN KEY \`FK_261580b8cc66e2d093fd235d931\``);
         await queryRunner.query(`ALTER TABLE \`rbac_permission_roles_rbac_roles\` DROP FOREIGN KEY \`FK_6915858cb1d029e3fc8989644a1\``);
         await queryRunner.query(`ALTER TABLE \`rbac_permission_roles_rbac_roles\` DROP FOREIGN KEY \`FK_729cfb6b1737c0b504e33f986fb\``);
-        await queryRunner.query(`ALTER TABLE \`rbac_menus_permissions_rbac_permission\` DROP FOREIGN KEY \`FK_431bea2c249d97ab1f9d5748daf\``);
-        await queryRunner.query(`ALTER TABLE \`rbac_menus_permissions_rbac_permission\` DROP FOREIGN KEY \`FK_afdf419c2adf58deedc54af405d\``);
         await queryRunner.query(`ALTER TABLE \`rbac_menus_users_users\` DROP FOREIGN KEY \`FK_a3850b795a32cab6382734d4e7a\``);
         await queryRunner.query(`ALTER TABLE \`rbac_menus_users_users\` DROP FOREIGN KEY \`FK_1055675c009c2163edf60b2ff25\``);
         await queryRunner.query(`ALTER TABLE \`content_posts\` DROP FOREIGN KEY \`FK_8fcc2d81ced7b8ade2bbd151b1a\``);
@@ -107,9 +102,6 @@ export class DrqNrm1688294765637 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX \`IDX_6915858cb1d029e3fc8989644a\` ON \`rbac_permission_roles_rbac_roles\``);
         await queryRunner.query(`DROP INDEX \`IDX_729cfb6b1737c0b504e33f986f\` ON \`rbac_permission_roles_rbac_roles\``);
         await queryRunner.query(`DROP TABLE \`rbac_permission_roles_rbac_roles\``);
-        await queryRunner.query(`DROP INDEX \`IDX_431bea2c249d97ab1f9d5748da\` ON \`rbac_menus_permissions_rbac_permission\``);
-        await queryRunner.query(`DROP INDEX \`IDX_afdf419c2adf58deedc54af405\` ON \`rbac_menus_permissions_rbac_permission\``);
-        await queryRunner.query(`DROP TABLE \`rbac_menus_permissions_rbac_permission\``);
         await queryRunner.query(`DROP INDEX \`IDX_a3850b795a32cab6382734d4e7\` ON \`rbac_menus_users_users\``);
         await queryRunner.query(`DROP INDEX \`IDX_1055675c009c2163edf60b2ff2\` ON \`rbac_menus_users_users\``);
         await queryRunner.query(`DROP TABLE \`rbac_menus_users_users\``);

@@ -37,13 +37,13 @@ export class PermissionEntity<
     roles!: RoleEntity[];
 
     @ManyToMany(() => UserEntity, (user: UserEntity) => user.permissions, {
-        onDelete: 'NO ACTION',
+        // onDelete: 'NO ACTION',
     })
     @JoinTable()
     users!: UserEntity[];
 
     @ManyToMany(() => MenuEntity, (menu: MenuEntity) => menu.permissions, {
-        onDelete: 'NO ACTION',
+        // onDelete: 'NO ACTION',
     })
     @JoinTable()
     menus: MenuEntity[];

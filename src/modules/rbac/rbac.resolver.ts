@@ -199,6 +199,8 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
 
         const queryRunner = this.dataSource.createQueryRunner();
         // 连接到数据库
+        // await queryRunner.query('SET FOREIGN_KEY_CHECKS=0;');
+
         await queryRunner.connect();
         // 开启事务
         await queryRunner.startTransaction();
@@ -216,6 +218,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             console.error(err);
             await queryRunner.rollbackTransaction();
         } finally {
+            // await queryRunner.query('SET FOREIGN_KEY_CHECKS=1;');
             await queryRunner.release();
         }
     }
@@ -339,7 +342,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                 console.log('del', item.name);
             }
         }
-        console.log('toDels', toDels);
         if (toDels.length > 0) await manager.delete(PermissionEntity, toDels);
 
         // 建立角色到权限的关系
@@ -458,11 +460,14 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                         : null,
                     systemd: true,
                 });
+                console.log(menu);
+
                 await manager.save(menu, {
                     reload: true,
                 });
+                console.log(123456);
             } else {
-                menu = await manager.save(MenuEntity, {
+                await manager.update(MenuEntity, menu.id, {
                     name: item.name,
                     label: item.label,
                     router: item.router,
@@ -475,6 +480,11 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                               },
                           }),
                     systemd: true,
+                });
+                menu = await manager.findOne(MenuEntity, {
+                    where: {
+                        id: menu.id,
+                    },
                 });
                 const permissions = await manager.find(PermissionEntity, {
                     where: {
