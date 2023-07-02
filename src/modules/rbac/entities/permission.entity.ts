@@ -6,6 +6,7 @@ import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 import { BaseEntity } from '@/modules/database/base';
 import { UserEntity } from '@/modules/user/entities';
 
+import { MenuEntity } from './menu.entity';
 import { RoleEntity } from './role.entity';
 
 @Exclude()
@@ -40,6 +41,12 @@ export class PermissionEntity<
     })
     @JoinTable()
     users!: UserEntity[];
+
+    @ManyToMany(() => MenuEntity, (menu: MenuEntity) => menu.permissions, {
+        onDelete: 'NO ACTION',
+    })
+    @JoinTable()
+    menus: MenuEntity[];
 
     @Expose()
     @Column({

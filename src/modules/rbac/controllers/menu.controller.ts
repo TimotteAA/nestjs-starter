@@ -8,16 +8,26 @@ import { Crud, Depends } from '@/modules/restful/decorators';
 
 import { createHookOption } from '@/modules/restful/helpers';
 
+import { PermissionAction } from '../constants';
 import { CreateMenuDto, QueryMenuTreeDto, UpdateMenuDto } from '../dtos';
+import { MenuEntity } from '../entities';
 import { RbacModule } from '../rbac.module';
 import { MenuService } from '../services';
+import { PermissionChecker } from '../types';
+
+/**
+ * 权限：权限管理员
+ */
+const permissions: PermissionChecker[] = [
+    async (ab) => ab.can(PermissionAction.MANAGE, MenuEntity.name),
+];
 
 @Crud(async () => ({
     id: 'menu',
     enabled: [
-        { name: 'create', option: createHookOption({ summary: '创建菜单' }) },
-        { name: 'delete', option: createHookOption({ summary: '删除菜单' }) },
-        { name: 'update', option: createHookOption({ summary: '更新菜单' }) },
+        { name: 'create', option: createHookOption({ summary: '创建菜单', permissions }) },
+        { name: 'delete', option: createHookOption({ summary: '删除菜单', permissions }) },
+        { name: 'update', option: createHookOption({ summary: '更新菜单', permissions }) },
     ],
     dtos: {
         create: CreateMenuDto,

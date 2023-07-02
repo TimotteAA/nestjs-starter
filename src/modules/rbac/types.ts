@@ -6,13 +6,19 @@ import { CrudMethodOption, CrudMethod, CrudOptions } from '@/modules/restful/typ
 
 import { UserEntity } from '../user/entities';
 
-import { RoleEntity, PermissionEntity } from './entities';
+import { RoleEntity, PermissionEntity, MenuEntity } from './entities';
 
 /**
  * 角色类型：角色名、别名、描述、权限
  */
 export type Role = Pick<ClassToPlain<RoleEntity>, 'name' | 'label' | 'description'> & {
     permissions: string[];
+};
+
+export type Menu = Pick<ClassToPlain<MenuEntity>, 'name' | 'customOrder' | 'label' | 'router'> & {
+    permissions?: string[];
+    parent?: string;
+    systemed: true;
 };
 
 /**
@@ -49,6 +55,7 @@ type PermissionCheckerCallback = (
  */
 export type PermissionChecker = PermissionCheckerClass | PermissionCheckerCallback;
 
+/** *******************************下面暂时无用************************************************************* */
 export type RbacCrudOption = CrudMethodOption & { rbac?: PermissionChecker[] };
 export interface RbacCrudItem {
     name: CrudMethod;

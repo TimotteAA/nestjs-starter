@@ -7,6 +7,8 @@ import { UserEntity } from '@/modules/user/entities';
 
 import { MenuType } from '../constants';
 
+import { PermissionEntity } from './permission.entity';
+
 @Exclude()
 @Tree('materialized-path')
 @Entity('rbac_menus')
@@ -28,11 +30,13 @@ export class MenuEntity extends BaseEntity {
 
     @Column({
         comment: '菜单展示的icon',
+        nullable: true,
     })
     icon?: string;
 
     @Column({
         comment: '路由对应前端组件',
+        nullable: true,
     })
     component?: string;
 
@@ -53,8 +57,15 @@ export class MenuEntity extends BaseEntity {
 
     @Column({
         comment: '是否显示',
+        default: true,
     })
     isShow?: boolean;
+
+    @Column({
+        comment: '系统内置菜单，不能删除',
+        default: false,
+    })
+    systemd?: boolean;
 
     @Column({
         comment: '菜单排序字段',
@@ -78,4 +89,10 @@ export class MenuEntity extends BaseEntity {
     })
     @JoinTable()
     users: UserEntity[];
+
+    @ManyToMany(() => PermissionEntity, (permission: PermissionEntity) => permission.menus, {
+        onDelete: 'NO ACTION',
+    })
+    @JoinTable()
+    permissions: PermissionEntity[];
 }
