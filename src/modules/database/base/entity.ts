@@ -1,15 +1,10 @@
-import { Expose } from 'class-transformer';
-import { PrimaryGeneratedColumn, BaseEntity as TypeormBaseEntity } from 'typeorm';
+import { PrimaryColumn, BaseEntity as TypeormBaseEntity } from 'typeorm';
 
 /**
  * 对同一封装id
  *
  */
 export class BaseEntity extends TypeormBaseEntity {
-    @Expose()
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryColumn({ type: 'varchar', generated: 'uuid', length: 36 })
     id: string;
-    // @Expose()
-    // @PrimaryColumn('uuid')
-    // id: string;
 }

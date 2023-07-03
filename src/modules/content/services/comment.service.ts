@@ -8,7 +8,8 @@ import { BaseService } from '@/modules/database/base';
 
 import { UserService } from '@/modules/user/services';
 
-import { CreateCommentDto, QueryCommentDto, QueryCommentTreeDto } from '../dtos';
+import { CreateCommentDto } from '../dtos';
+import { ManageQueryCommentDto, ManageQueryCommentTreeDto } from '../dtos/manage';
 import { CommentEntity } from '../entities/comment.entity';
 import { CommentRepository } from '../repositories/comment.repository';
 import { PostRepository } from '../repositories/post.repository';
@@ -30,7 +31,7 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
      * 直接查询评论树
      * @param options
      */
-    async findTrees(options: QueryCommentTreeDto = {}) {
+    async findTrees(options: ManageQueryCommentTreeDto = {}) {
         return this.repository.findTrees({
             addQuery: async (qb) => {
                 console.log(options);
@@ -50,7 +51,7 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
      * 查找一篇文章的评论并分页
      * @param dto
      */
-    async paginate(options: QueryCommentDto) {
+    async paginate(options: ManageQueryCommentDto) {
         const { post, author } = options;
         // console.log(author);
         const addQuery = async (qb: SelectQueryBuilder<CommentEntity>) => {

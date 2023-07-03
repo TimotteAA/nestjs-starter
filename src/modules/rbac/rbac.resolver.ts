@@ -460,12 +460,10 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                         : null,
                     systemd: true,
                 });
-                console.log(menu);
 
                 await manager.save(menu, {
                     reload: true,
                 });
-                console.log(123456);
             } else {
                 await manager.update(MenuEntity, menu.id, {
                     name: item.name,

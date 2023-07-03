@@ -1,66 +1,69 @@
-import { Body, Controller, Get, Post, Query, SerializeOptions } from '@nestjs/common';
+import {
+    Param,
+    Controller,
+    Get,
+    Query,
+    SerializeOptions,
+    ParseUUIDPipe,
+    Body,
+    Post,
+    Delete,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-
-import { BaseController } from '@/modules/restful/base';
-import { Crud, Depends } from '@/modules/restful/decorators';
-
-import { createHookOption } from '@/modules/restful/helpers';
-
-import { ReqUser } from '@/modules/user/decorators';
+import { Depends } from '@/modules/restful/decorators';
+import { DeleteDto } from '@/modules/restful/dtos';
+import { Guest, ReqUser } from '@/modules/user/decorators';
 
 import { UserEntity } from '@/modules/user/entities';
 
 import { ContentModule } from '../content.module';
-import { CreateCommentDto, QueryCommentDto, QueryCommentTreeDto } from '../dtos';
+import { CreateCommentDto, QueryCommentDto } from '../dtos';
+
 import { CommentService } from '../services';
 
-@ApiTags('评论')
+@ApiTags('前端评论接口')
 @Depends(ContentModule)
-@Crud(async () => ({
-    id: 'comment',
-    enabled: [
-        {
-            name: 'list',
-            option: createHookOption({ summary: '评论查询,以分页模式展示', guest: true }),
-        },
-        {
-            name: 'detail',
-            option: createHookOption({ summary: '评论详情', guest: true }),
-        },
-        {
-            name: 'create',
-            option: createHookOption('添加评论'),
-        },
-        {
-            name: 'delete',
-            option: createHookOption('删除评论'),
-        },
-    ],
-    dtos: {
-        create: CreateCommentDto,
-        list: QueryCommentDto,
-    },
-}))
 @Controller('comments')
-export class CommentController extends BaseController<CommentService> {
-    constructor(protected service: CommentService) {
-        super(service);
+export class CommentController {
+    public constructor(protected service: CommentService) {}
+
+    @ApiOperation({
+        summary: '查询文章列表',
+    })
+    @Guest()
+    @Get()
+    @SerializeOptions({ groups: ['comment-list'] })
+    async list(@Query() data: QueryCommentDto) {
+        return this.service.paginate(data);
     }
 
-    @Get('tree')
-    @ApiOperation({ summary: '树形结构评论查询' })
-    @SerializeOptions({ groups: ['comment-tree'] })
-    async tree(
-        @Query()
-        query: QueryCommentTreeDto,
+    @ApiOperation({
+        summary: '查看评论详情',
+    })
+    @Get(':id')
+    @Guest()
+    @SerializeOptions({ groups: ['comment-detail'] })
+    async detail(
+        @Param('id', new ParseUUIDPipe())
+        id: string,
     ) {
-        return this.service.findTrees(query);
+        return this.service.detail(id);
     }
 
+    @ApiOperation({
+        summary: '创建评论',
+    })
     @Post()
-    @ApiOperation({ summary: '添加评论' })
-    async create(@ReqUser() user: ClassToPlain<UserEntity>, @Body() data: CreateCommentDto) {
+    async create(@Body() data: CreateCommentDto, @ReqUser() user: ClassToPlain<UserEntity>) {
         return this.service.create(data, user.id);
+    }
+
+    @ApiOperation({
+        summary: '删除评论',
+    })
+    @Delete()
+    async delete(@Body() data: DeleteDto) {
+        return this.service.delete(data.ids, false);
     }
 }

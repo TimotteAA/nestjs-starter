@@ -5,7 +5,11 @@ import { EntityNotFoundError } from 'typeorm';
 import { BaseService } from '@/modules/database/base';
 
 import { SelectTrashMode } from '../../database/constants';
-import { CreateCategoryDto, UpdateCategoryDto, QueryCategoryTreeDto } from '../dtos';
+import {
+    ManageCreateCategoryDto,
+    ManageUpdateCategoryDto,
+    ManageQueryCategoryTreeDto,
+} from '../dtos/manage';
 import { CategoryEntity } from '../entities';
 
 import { CategoryRepository } from '../repositories';
@@ -24,7 +28,7 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
     /**
      * 查询分类树
      */
-    async findTrees(options: QueryCategoryTreeDto) {
+    async findTrees(options: ManageQueryCategoryTreeDto) {
         const { trashed = SelectTrashMode.NONE } = options;
         return this.repository.findTrees({
             withTrashed: trashed === SelectTrashMode.ALL || trashed === SelectTrashMode.ONLY,
@@ -36,7 +40,7 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
      * 新增分类
      * @param data
      */
-    async create(data: CreateCategoryDto) {
+    async create(data: ManageCreateCategoryDto) {
         const item = await this.repository.save({
             ...data,
             parent: await this.getParent(undefined, data.parent),
@@ -48,7 +52,7 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
      * 更新分类
      * @param data
      */
-    async update(data: UpdateCategoryDto) {
+    async update(data: ManageUpdateCategoryDto) {
         const parent = await this.getParent(data.id, data.parent);
         const querySet = omit(data, ['id', 'parent']);
         if (Object.keys(querySet).length > 0) {
