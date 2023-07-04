@@ -90,9 +90,6 @@ export class MenuEntity extends BaseEntity {
     @JoinTable()
     users: UserEntity[];
 
-    @ManyToMany(() => PermissionEntity, (permission: PermissionEntity) => permission.menus, {
-        // onDelete: 'NO ACTION',
-    })
-    // @JoinTable() 双向必须同时插入？ 在某一侧添加了JoinTable，另一侧插入时就得保存这一侧的entity
+    @ManyToMany(() => PermissionEntity, (permission: PermissionEntity) => permission.menus)
     permissions: PermissionEntity[];
 }

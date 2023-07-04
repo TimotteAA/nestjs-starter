@@ -339,7 +339,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         for (const item of permissions) {
             if (!names.includes(item.name) && item.name !== 'system.manage') {
                 toDels.push(item.id);
-                console.log('del', item.name);
+                // console.log('del', item.name);
             }
         }
         if (toDels.length > 0) await manager.delete(PermissionEntity, toDels);
@@ -483,18 +483,49 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                     where: {
                         id: menu.id,
                     },
+                    relations: ['permissions'],
                 });
                 const permissions = await manager.find(PermissionEntity, {
                     where: {
                         name: In(item.permissions),
                     },
+                    relations: ['menus'],
                 });
+                // console.error(permissions, menu);
                 // 处理permissions：删了老的，加入新的
+                // await manager
+                //     .createQueryBuilder(MenuEntity, 'menu')
+                //     .relation(PermissionEntity, 'permissions')
+                //     .of(menu)
+                //     .addAndRemove(permissions ?? [], menu.permissions ?? []);
+                // await manager
+                //     .createQueryBuilder(PermissionEntity, 'permission')
+                //     .relation(MenuEntity, 'menus')
+                //     .of(menu)
+                //     .addAndRemove(permissions ?? [], menu.permissions);
+                // const menuRepo = manager.getRepository(MenuEntity);
+                // await menuRepo
+                //     .createQueryBuilder('menu')
+                //     .relation(PermissionEntity, 'permissions')
+                //     .of(menu)
+                //     .addAndRemove(permissions ?? [], menu.permissions);
+
+                const oldPermissions = menu.permissions;
+                const toBeRemoved = oldPermissions.filter(
+                    (op) => !item.permissions.includes(op.name),
+                );
+
                 await manager
-                    .createQueryBuilder(MenuEntity, 'menu')
-                    .relation(PermissionEntity, 'permissions')
+                    .createQueryBuilder()
+                    .relation(MenuEntity, 'permissions')
                     .of(menu)
-                    .addAndRemove(permissions ?? [], menu.permissions);
+                    .remove(toBeRemoved);
+
+                await manager
+                    .createQueryBuilder()
+                    .relation(MenuEntity, 'permissions')
+                    .of(menu)
+                    .addAndRemove(permissions ?? [], menu.permissions ?? []);
             }
         }
 
