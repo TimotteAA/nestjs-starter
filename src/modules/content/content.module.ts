@@ -9,6 +9,7 @@ import { UserService } from '../user/services';
 import { UserModule } from '../user/user.module';
 
 import * as entities from './entities';
+import { ContentRbac } from './rbac';
 import * as repositories from './repositories';
 import { CategoryRepository, PostRepository } from './repositories';
 import * as services from './services';
@@ -49,6 +50,7 @@ import { SearchType } from './types';
                 );
             },
         },
+        ContentRbac,
     ];
     if (configure.has('elastic') && searchType === 'elastic') providers.push(SearchService);
     return {

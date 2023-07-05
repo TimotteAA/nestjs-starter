@@ -2,6 +2,8 @@ import { Controller, Delete, Get, Query, SerializeOptions } from '@nestjs/common
 
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { PermissionAction } from '@/modules/rbac/constants';
+import { PermissionChecker } from '@/modules/rbac/types';
 import { BaseController } from '@/modules/restful/base';
 import { Crud, Depends } from '@/modules/restful/decorators';
 
@@ -10,7 +12,12 @@ import { createHookOption } from '@/modules/restful/helpers';
 
 import { ContentModule } from '../../content.module';
 import { ManageQueryCommentDto, ManageQueryCommentTreeDto } from '../../dtos/manage';
+import { CommentEntity } from '../../entities';
 import { CommentService } from '../../services';
+
+const permissions: PermissionChecker[] = [
+    async (ab) => ab.can(PermissionAction.MANAGE, CommentEntity),
+];
 
 @ApiTags('评论管理')
 @Depends(ContentModule)
@@ -19,15 +26,15 @@ import { CommentService } from '../../services';
     enabled: [
         {
             name: 'list',
-            option: createHookOption({ summary: '评论查询,以分页模式展示' }),
+            option: createHookOption({ summary: '评论查询,以分页模式展示', permissions }),
         },
         {
             name: 'detail',
-            option: createHookOption({ summary: '评论详情' }),
+            option: createHookOption({ summary: '评论详情', permissions }),
         },
         {
             name: 'delete',
-            option: createHookOption('删除评论'),
+            option: createHookOption({ summary: '删除评论', permissions }),
         },
     ],
     dtos: {

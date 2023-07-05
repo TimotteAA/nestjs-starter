@@ -2,6 +2,9 @@ import { Controller, Get, Query, SerializeOptions } from '@nestjs/common';
 
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { PermissionAction } from '@/modules/rbac/constants';
+import { Permission } from '@/modules/rbac/decorators';
+import { PermissionChecker } from '@/modules/rbac/types';
 import { BaseControllerWithTrash } from '@/modules/restful/base';
 
 import { Crud, Depends } from '@/modules/restful/decorators';
@@ -16,7 +19,12 @@ import {
     ManageQueryCategoryDto,
     ManageQueryCategoryTreeDto,
 } from '../../dtos/manage';
+import { CategoryEntity } from '../../entities';
 import { CategoryService } from '../../services';
+
+const permissions: PermissionChecker[] = [
+    async (ab) => ab.can(PermissionAction.MANAGE, CategoryEntity),
+];
 
 @ApiTags('分类管理')
 @ApiBearerAuth()
@@ -26,27 +34,27 @@ import { CategoryService } from '../../services';
     enabled: [
         {
             name: 'list',
-            option: createHookOption({ summary: '分类查询,以分页模式展示', guest: true }),
+            option: createHookOption({ summary: '分类查询,以分页模式展示', permissions }),
         },
         {
             name: 'detail',
-            option: createHookOption({ summary: '分类详情', guest: true }),
+            option: createHookOption({ summary: '分类详情', permissions }),
         },
         {
             name: 'create',
-            option: createHookOption('创建分类'),
+            option: createHookOption({ summary: '创建分类', permissions }),
         },
         {
             name: 'update',
-            option: createHookOption('更新分类'),
+            option: createHookOption({ summary: '更新分类', permissions }),
         },
         {
             name: 'delete',
-            option: createHookOption('删除分类'),
+            option: createHookOption({ summary: '删除分类', permissions }),
         },
         {
             name: 'restore',
-            option: createHookOption('恢复分类'),
+            option: createHookOption({ summary: '恢复分类', permissions }),
         },
     ],
     dtos: {
@@ -62,6 +70,8 @@ export class CategoryController extends BaseControllerWithTrash<CategoryService>
     }
 
     @Get('tree')
+    // @Guest()
+    @Permission(permissions[0])
     @ApiOperation({ summary: '树形结构分类查询' })
     @SerializeOptions({ groups: ['category-tree'] })
     async tree(@Query() options: ManageQueryCategoryTreeDto) {

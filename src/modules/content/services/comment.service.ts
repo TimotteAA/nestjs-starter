@@ -55,8 +55,8 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
         const { post, author } = options;
         // console.log(author);
         const addQuery = async (qb: SelectQueryBuilder<CommentEntity>) => {
-            if (!isNil(post)) qb = qb.andWhere('post.id = :id', { id: post });
-            if (!isNil(author)) qb = qb.andWhere('author.id = :id', { id: author });
+            if (!isNil(post)) qb.andWhere('post.id = :id', { id: post });
+            if (!isNil(author)) qb.andWhere('author.id = :id', { id: author });
             return qb;
         };
         return super.paginate(

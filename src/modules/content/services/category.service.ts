@@ -72,18 +72,21 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
     }
 
     /**
-     * 获取请求传入的父分类
-     * @param current 当前分类的ID
-     * @param id
+     *
+     * @param current
+     * @param parentId 父分类id
      */
-    protected async getParent(current?: string, id?: string) {
-        if (current === id) return undefined;
+    protected async getParent(current?: string, parentId?: string) {
+        if (current === parentId) return undefined;
         let parent: CategoryEntity | undefined;
-        if (id !== undefined) {
-            if (id === null) return null;
-            parent = await this.repository.findOne({ where: { id } });
+        if (parentId !== undefined) {
+            if (parentId === null) return null;
+            parent = await this.repository.findOne({ where: { id: parentId } });
             if (!parent)
-                throw new EntityNotFoundError(CategoryEntity, `Parent category ${id} not exists!`);
+                throw new EntityNotFoundError(
+                    CategoryEntity,
+                    `Parent category ${parentId} not exists!`,
+                );
         }
         return parent;
     }
