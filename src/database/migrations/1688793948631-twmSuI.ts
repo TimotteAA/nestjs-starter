@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class LBGgEN1688512715631 implements MigrationInterface {
-    name = 'LBGgEN1688512715631'
+export class TwmSuI1688793948631 implements MigrationInterface {
+    name = 'TwmSuI1688793948631'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE \`user_refresh_tokens\` (\`id\` varchar(36) NOT NULL, \`value\` varchar(500) NOT NULL, \`expired_at\` datetime NOT NULL COMMENT '令牌过期时间', \`createdAt\` datetime(6) NOT NULL COMMENT '令牌创建时间' DEFAULT CURRENT_TIMESTAMP(6), \`accessTokenId\` varchar(36) NULL, UNIQUE INDEX \`REL_1dfd080c2abf42198691b60ae3\` (\`accessTokenId\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
@@ -24,7 +24,7 @@ export class LBGgEN1688512715631 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE \`users_menus_rbac_menus\` (\`usersId\` varchar(36) NOT NULL, \`rbacMenusId\` varchar(36) NOT NULL, INDEX \`IDX_9e5ee8976dc5ab6050cc396c81\` (\`usersId\`), INDEX \`IDX_4ec59632b8f65eecad51003e01\` (\`rbacMenusId\`), PRIMARY KEY (\`usersId\`, \`rbacMenusId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`content_posts_categories_content_categories\` (\`contentPostsId\` varchar(36) NOT NULL, \`contentCategoriesId\` varchar(36) NOT NULL, INDEX \`IDX_9172320639056856745c6bc21a\` (\`contentPostsId\`), INDEX \`IDX_82926fe45def38f6a53838347a\` (\`contentCategoriesId\`), PRIMARY KEY (\`contentPostsId\`, \`contentCategoriesId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`ALTER TABLE \`user_refresh_tokens\` ADD CONSTRAINT \`FK_1dfd080c2abf42198691b60ae39\` FOREIGN KEY (\`accessTokenId\`) REFERENCES \`user_access_tokens\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE \`rbac_menus\` ADD CONSTRAINT \`FK_22f05a5320fa97b31323df801dd\` FOREIGN KEY (\`parentId\`) REFERENCES \`rbac_menus\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`rbac_menus\` ADD CONSTRAINT \`FK_22f05a5320fa97b31323df801dd\` FOREIGN KEY (\`parentId\`) REFERENCES \`rbac_menus\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`user_access_tokens\` ADD CONSTRAINT \`FK_71a030e491d5c8547fc1e38ef82\` FOREIGN KEY (\`userId\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`content_categories\` ADD CONSTRAINT \`FK_a03aea27707893300382b6f18ae\` FOREIGN KEY (\`parentId\`) REFERENCES \`content_categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`content_comments\` ADD CONSTRAINT \`FK_5e1c3747a0031f305e94493361f\` FOREIGN KEY (\`postId\`) REFERENCES \`content_posts\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE`);

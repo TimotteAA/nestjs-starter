@@ -1,4 +1,4 @@
-import { Body, Param, ParseUUIDPipe, Query, Type } from '@nestjs/common';
+import { Body, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 
 import { DeleteDto, ListQueryDto } from '../dtos';
 
@@ -28,7 +28,7 @@ export abstract class BaseController<S> {
         return (this.service as any).detail(id);
     }
 
-    async store(
+    async create(
         @Body()
         data: any,
         ...args: any[]
@@ -50,14 +50,5 @@ export abstract class BaseController<S> {
         ...args: any[]
     ) {
         return (this.service as any).delete(ids);
-    }
-
-    /**
-     * 专门用于保存路有方法的名称
-     * @param target
-     * @param propertyKey
-     */
-    public saveMethodName(target: Type<any>, propertyKey: string) {
-        Reflect.defineMetadata('methodName', propertyKey, target, propertyKey);
     }
 }

@@ -76,7 +76,7 @@ export class MenuEntity extends BaseEntity {
     // 关联关系
     @Expose({ groups: ['menu-detail', 'menu-list'] })
     @Type(() => MenuEntity)
-    @TreeParent({ onDelete: 'NO ACTION' })
+    @TreeParent({ onDelete: 'CASCADE' })
     parent: MenuEntity | null;
 
     @Expose({ groups: ['menu-tree'] })

@@ -1,5 +1,7 @@
 import { isNil } from 'lodash';
-import { EventSubscriber, EntitySubscriberInterface, DataSource } from 'typeorm';
+import { EventSubscriber } from 'typeorm';
+
+import { BaseSubscriber } from '@/modules/database/base';
 
 import { RoleEntity } from '../entities';
 
@@ -8,16 +10,14 @@ import { RoleEntity } from '../entities';
  * 数据库没有label字段，设置name为label字段
  */
 @EventSubscriber()
-export class RoleSubscriber implements EntitySubscriberInterface<RoleEntity> {
-    constructor(private dataSource: DataSource) {
-        this.dataSource.subscribers.push(this);
-    }
+export class RoleSubscriber extends BaseSubscriber<RoleEntity> {
+    protected entity = RoleEntity;
 
     listenTo() {
         return RoleEntity;
     }
 
-    afterLoad(entity: RoleEntity): void | Promise<any> {
+    async afterLoad(entity: RoleEntity): Promise<any> {
         if (isNil(entity.label)) {
             entity.label = entity.name;
         }

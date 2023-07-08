@@ -33,16 +33,21 @@ export class PermissionService extends BaseService<
      * @param options
      * @param callback
      */
-    protected buildListQuery(
+    protected async buildListQB(
         qb: SelectQueryBuilder<PermissionEntity>,
         options: FindParams,
         callback?: QueryHook<PermissionEntity>,
     ): Promise<SelectQueryBuilder<PermissionEntity>> {
         const { role } = options;
         if (!isNil(role)) {
-            qb.andWhere('roles.id IN (:...ids)', {
-                ids: [role],
-            });
+            const { qbName } = this.repo;
+            const roleQb = this.repo
+                .createQueryBuilder(qbName)
+                .innerJoin(`${qbName}.roles`, 'pRoles', 'pRoles.id IN (:...ids)', {
+                    ids: [role],
+                })
+                .orderBy(`${qbName}.customOrder`, 'ASC');
+            return super.buildListQB(roleQb, options, callback);
         }
         return super.buildListQB(qb, options, callback);
     }

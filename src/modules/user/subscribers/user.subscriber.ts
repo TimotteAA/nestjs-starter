@@ -4,6 +4,8 @@ import { EventSubscriber, InsertEvent, UpdateEvent } from 'typeorm';
 
 import { BaseSubscriber } from '@/modules/database/base';
 
+import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
+
 import { UserEntity } from '../entities/user.entity';
 import { encrypt } from '../helpers';
 
@@ -51,5 +53,31 @@ export class UserSubscriber extends BaseSubscriber<UserEntity> {
         if (this.isUpdated('password', event)) {
             event.entity.password = encrypt(event.entity.password);
         }
+    }
+
+    async afterLoad(entity: UserEntity): Promise<void> {
+        // user的权限通过角色查询而出，因此权限可能会有重复
+        let permissions = (entity.permissions ?? []) as PermissionEntity[];
+        // 查询角色所有的权限
+        if (entity.roles && entity.roles.length > 0) {
+            for (const role of entity.roles) {
+                const roleEntity = await RoleEntity.findOneOrFail({
+                    where: {
+                        id: role.id,
+                    },
+                    relations: ['permissions'],
+                });
+                permissions = [...permissions, ...(roleEntity.permissions ?? [])];
+            }
+        }
+
+        permissions = permissions.reduce<PermissionEntity[]>((o, n) => {
+            if (o.map((item) => item.name).includes(n.name)) {
+                return o;
+            }
+            return [...o, n];
+        }, []);
+        // console.log('permissions', permissions);
+        entity.permissions = permissions;
     }
 }

@@ -44,13 +44,15 @@ export class RbacGuard extends JwtAuthGuard {
         // 通过jwt校验后会有user
         request = context.switchToHttp().getRequest();
         if (isNil(request.user)) return false;
+        // console.log('request.user', request.user);
         const user = await this.userRepo.findOneOrFail({
             where: {
-                id: request.user.id,
+                // id: request.user.id,
+                username: request.user.username,
             },
             relations: ['roles.permissions', 'permissions'],
         });
-
+        // console.log('rbac guard', user);
         // console.log('user', user);
         return solveChecker({
             checkers,

@@ -43,7 +43,7 @@ export class RoleEntity extends BaseEntity {
     })
     deletedAt!: Date;
 
-    @Expose({ groups: ['role-detail', 'role-list'] })
+    @Expose({ groups: ['role-detail'] })
     // 角色创建时，也创建权限
     @ManyToMany(() => PermissionEntity, (p: PermissionEntity) => p.roles, {
         cascade: true,

@@ -64,6 +64,12 @@ export class RoleService extends BaseService<RoleEntity, RoleRepository> {
         return this.detail(role.id);
     }
 
+    async detail(id: string, callback?: QueryHook<RoleEntity>): Promise<RoleEntity> {
+        return super.detail(id, async (qb) =>
+            qb.leftJoinAndSelect(`${this.repo.qbName}.permissions`, 'permissions'),
+        );
+    }
+
     async delete(ids: string[], trash?: boolean): Promise<RoleEntity[]> {
         // 查询是否删除了系统角色
         const items = await this.repo.find({
@@ -86,7 +92,7 @@ export class RoleService extends BaseService<RoleEntity, RoleRepository> {
      * @param options
      * @param callback
      */
-    protected buildListQuery(
+    protected buildListQB(
         qb: SelectQueryBuilder<RoleEntity>,
         options: FindParams,
         callback?: QueryHook<RoleEntity>,

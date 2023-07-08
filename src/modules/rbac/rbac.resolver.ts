@@ -270,15 +270,24 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             where: {
                 systemd: true,
             },
+            relations: ['permissions'],
         });
         // console.log("systemRoles", systemRoles);
         const toDels: string[] = [];
         for (const role of systemRoles) {
             if (!this.roles.find((item) => item.name === role.name)) {
                 toDels.push(role.id);
+                // 由于外键约束，清理老的permissions
+                await manager
+                    .createQueryBuilder()
+                    .relation(RoleEntity, 'permissions')
+                    .of(role)
+                    .remove(role.permissions ?? []);
             }
         }
-        // console.log('toDels role', toDels);
+        console.log('toDels role', toDels);
+        // 删除角色前，清楚permissions的关系
+
         if (toDels.length > 0) await manager.delete(RoleEntity, toDels);
     }
 
@@ -347,6 +356,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         // 建立角色到权限的关系
 
         /** *********** 同步普通角色 *************** */
+        // console.log('roles', roles);
         for (const role of roles) {
             // const p = this.roles.find(r => r.name === role.name).permissions
             // 动态创建的角色不会同步
@@ -358,16 +368,18 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                     // 新配置的role的权限
                     name: In(roleMemory.permissions),
                 });
-                // 删除老的权限，增加新配置的
-                await roleRepo
-                    .createQueryBuilder('role')
+                const oldPermissions = role.permissions;
+                await manager
+                    .createQueryBuilder()
                     .relation(RoleEntity, 'permissions')
                     .of(role)
-                    .addAndRemove(
-                        rolePermissions.map((p) => p.id),
-                        // 同步权限前的角色权限
-                        role.permissions ? role.permissions.map((p) => p.id) : [],
-                    );
+                    .remove(oldPermissions);
+
+                await manager
+                    .createQueryBuilder()
+                    .relation(RoleEntity, 'permissions')
+                    .of(role)
+                    .add(rolePermissions);
             }
         }
 
@@ -380,7 +392,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             },
             relations: ['permissions'],
         });
-
         // 新的，所有的系统权限
         // 前面同步过系统权限
         const systemManage = await manager.findOneOrFail(PermissionEntity, {
@@ -405,7 +416,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             },
             relations: ['roles', 'permissions'],
         });
-        // console.log("superUser", superUser)
+        // console.log('superUser', superUser);
         // console.log("superRole", superRole)
 
         // 不为空
@@ -491,25 +502,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                     },
                     relations: ['menus'],
                 });
-                // console.error(permissions, menu);
-                // 处理permissions：删了老的，加入新的
-                // await manager
-                //     .createQueryBuilder(MenuEntity, 'menu')
-                //     .relation(PermissionEntity, 'permissions')
-                //     .of(menu)
-                //     .addAndRemove(permissions ?? [], menu.permissions ?? []);
-                // await manager
-                //     .createQueryBuilder(PermissionEntity, 'permission')
-                //     .relation(MenuEntity, 'menus')
-                //     .of(menu)
-                //     .addAndRemove(permissions ?? [], menu.permissions);
-                // const menuRepo = manager.getRepository(MenuEntity);
-                // await menuRepo
-                //     .createQueryBuilder('menu')
-                //     .relation(PermissionEntity, 'permissions')
-                //     .of(menu)
-                //     .addAndRemove(permissions ?? [], menu.permissions);
-
                 const oldPermissions = menu.permissions;
                 const toBeRemoved = oldPermissions.filter(
                     (op) => !item.permissions.includes(op.name),

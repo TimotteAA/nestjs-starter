@@ -72,7 +72,7 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
      * 查询树形分类
      * @param options
      */
-    async findTrees(options?: FindTreeOptions & QueryParams<E>) {
+    async findTrees(options: FindTreeOptions & QueryParams<E> = {}) {
         options.withTrashed = options.withTrashed ?? false;
         const roots = await this.findRoots(options);
         await Promise.all(roots.map((root) => this.findDescendantsTree(root, options)));

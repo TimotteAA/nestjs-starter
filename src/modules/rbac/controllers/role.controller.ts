@@ -29,13 +29,9 @@ const permissions: PermissionChecker[] = [
         { name: 'update', options: createHookOption({ permissions, summary: '更新指定角色' }) },
         {
             name: 'delete',
-            options: createHookOption({ permissions, summary: '删除角色，支持批量删除' }),
+            options: createHookOption({ permissions, summary: '删除角色' }),
         },
         { name: 'detail', options: createHookOption({ permissions, summary: '查看角色详情' }) },
-        {
-            name: 'restore',
-            options: createHookOption({ permissions, summary: '恢复软删除角色，支持批量恢复' }),
-        },
     ],
     dtos: {
         list: QueryRoleDto,
@@ -48,4 +44,10 @@ export class RoleController extends BaseControllerWithTrash<RoleService> {
     constructor(protected roleService: RoleService) {
         super(roleService);
     }
+
+    // @Post()
+    // async create(@Body() data: CreateRoleDto) {
+    //     console.log('data', data);
+    //     return this.service.create(data);
+    // }
 }

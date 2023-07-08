@@ -1,6 +1,6 @@
-import { Body, Controller, Get } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { BaseController } from '@/modules/restful/base';
 
@@ -34,6 +34,7 @@ const permissions: PermissionChecker[] = [
         update: UpdateMenuDto,
     },
 }))
+@ApiBearerAuth()
 @ApiTags('菜单管理')
 @Depends(RbacModule)
 @Controller('menus')
@@ -43,7 +44,7 @@ export class MenuController extends BaseController<MenuService> {
     }
 
     @ApiOperation({ summary: '树形菜单查询' })
-    @Get('tree')
+    @Post('tree')
     tree(@Body() data: QueryMenuTreeDto) {
         return this.service.tree(data);
     }

@@ -94,7 +94,6 @@ export class TokenService {
             where: { value },
             relations: ['user', 'refreshToken'],
         });
-        console.log('res', res);
         return res;
     }
 
