@@ -71,6 +71,11 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
         return cat;
     }
 
+    async delete(ids: string[], trash?: boolean) {
+        console.log('ids', ids, trash);
+        return super.delete(ids, trash);
+    }
+
     /**
      *
      * @param current

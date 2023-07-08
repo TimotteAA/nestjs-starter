@@ -36,7 +36,7 @@ export class CommentEntity extends BaseEntity {
     @Expose()
     depth = 0;
 
-    @Expose()
+    @Expose({ groups: ['comment-detail'] })
     @ManyToOne((type) => PostEntity, (post) => post.comments, {
         // 文章不能为空
         nullable: false,

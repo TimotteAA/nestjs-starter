@@ -97,7 +97,7 @@ export async function createBootModule(
             ? globals.pipe(params)
             : new AppPipe({
                   transform: true,
-                  forbidUnknownValues: false,
+                  //   forbidUnknownValues: false,
                   validationError: { target: false },
               });
         providers.push({

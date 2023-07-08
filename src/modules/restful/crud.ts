@@ -47,8 +47,7 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
 
         const descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
         // console.log(Target, name, descriptor);
-        const [_, ...params] =
-            Reflect.getMetadata('design:paramtypes', Target.prototype, name) ?? [];
+        const [_, ...params] = Reflect.getMetadata('design:paramtypes', Target.prototype, name);
 
         if (name === 'create' && !isNil(dtos.create)) {
             Reflect.defineMetadata(
@@ -75,7 +74,14 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
             );
             ApiQuery({ type: dtos.list })(Target, name, descriptor);
         } else if (name === 'delete') {
+            // console.log(Target);
             // add api for delete
+            // Reflect.defineMetadata(
+            //     'design:paramtypes',
+            //     [DeleteWithTrashDto, ...params],
+            //     Target.prototype,
+            //     name,
+            // );
             ApiBody({ type: DeleteDto })(Target, name, descriptor);
         } else if (name === 'restore') {
             ApiBody({ type: RestoreDto })(Target, name, descriptor);
@@ -121,26 +127,5 @@ export const registerCrud = async <T extends BaseController<any> | BaseControlle
         if (option.allowGuest) Reflect.defineMetadata(ALLOW_GUEST, true, Target.prototype, name);
 
         if (!isNil(option.hook)) option.hook(Target, name);
-
-        const handlerDescriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
-
-        if (handlerDescriptor && handlerDescriptor.value) {
-            // const handlerName = handlerDescriptor.value.name;
-            // console.log('handlerName', handlerName);
-            // console.log('Target', Target.prototype, name);
-            saveMethodName(Target.prototype, name); // 将方法名称保存为元数据
-            // 将 handlerName 用于你的逻辑
-        }
     }
 };
-
-// 保存方法名称的工具函数
-export function saveMethodName(target: any, methodName: string) {
-    // Reflect.defineMetadata('methodName', methodName, target);
-    Reflect.defineMetadata('methodName', methodName, target, methodName);
-}
-
-// 获取方法名称的工具函数
-export function getMethodName(target: any): string | undefined {
-    return Reflect.getMetadata('methodName', target);
-}

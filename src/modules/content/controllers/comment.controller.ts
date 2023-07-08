@@ -7,7 +7,6 @@ import {
     ParseUUIDPipe,
     Body,
     Post,
-    Delete,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
@@ -87,9 +86,10 @@ export class CommentController {
     @ApiOperation({
         summary: '删除评论',
     })
+    @Guest()
     @Permission(permissions.delete)
-    @Delete()
     async delete(@Body() data: DeleteDto) {
+        console.log('data', data);
         return this.service.delete(data.ids, false);
     }
 }

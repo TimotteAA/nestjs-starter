@@ -1,6 +1,6 @@
 import { Body, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 
-import { DeleteDto, ListQueryDto } from '../dtos';
+import { DeleteWithTrashDto, ListQueryDto, RestoreDto } from '../dtos';
 
 /**
  * 基础控制器
@@ -46,9 +46,18 @@ export abstract class BaseController<S> {
 
     async delete(
         @Body()
-        { ids }: DeleteDto,
+        { ids, trash }: DeleteWithTrashDto,
         ...args: any[]
     ) {
-        return (this.service as any).delete(ids);
+        console.log('ids', ids, trash);
+        return (this.service as any).delete(ids, trash);
+    }
+
+    async restore(
+        @Body()
+        { ids }: RestoreDto,
+        ...args: any[]
+    ) {
+        return (this.service as any).restore(ids);
     }
 }

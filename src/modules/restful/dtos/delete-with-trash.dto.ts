@@ -10,7 +10,7 @@ import { DeleteDto } from './delete.dto';
 /**
  * 带软删除的批量删除验证
  */
-@DtoValidation()
+@DtoValidation({ type: 'body' })
 export class DeleteWithTrashDto extends DeleteDto {
     @ApiPropertyOptional({
         description: '是否删除到回收站',

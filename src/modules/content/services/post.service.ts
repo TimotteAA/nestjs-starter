@@ -178,7 +178,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         options: FindParams,
         callback?: QueryHook<PostEntity>,
     ) {
-        const { category, orderBy, isPublished, search, author } = options;
+        const { category, orderBy, isPublished, search, author } = options ?? {};
         const qb = await super.buildListQB(querBuilder, options, callback);
         if (typeof isPublished === 'boolean') {
             isPublished

@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
@@ -117,6 +118,7 @@ export class ManageCreatePostDto {
  * 文章更新验证
  */
 @DtoValidation({ groups: ['update'] })
+@Injectable()
 export class ManageUpdatePostDto extends PartialType(ManageCreatePostDto) {
     @ApiProperty({
         description: '待更新的文章ID',

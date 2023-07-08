@@ -1,13 +1,14 @@
-import { Controller, Delete, Get, Query, SerializeOptions } from '@nestjs/common';
+import { Body, Controller, Get, Query, SerializeOptions, Delete } from '@nestjs/common';
 
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { PermissionAction } from '@/modules/rbac/constants';
+import { Permission } from '@/modules/rbac/decorators';
 import { PermissionChecker } from '@/modules/rbac/types';
 import { BaseController } from '@/modules/restful/base';
 import { Crud, Depends } from '@/modules/restful/decorators';
 
-import { DeleteDto } from '@/modules/restful/dtos';
+import { DeleteWithTrashDto } from '@/modules/restful/dtos';
 import { createHookOption } from '@/modules/restful/helpers';
 
 import { ContentModule } from '../../content.module';
@@ -19,8 +20,8 @@ const permissions: PermissionChecker[] = [
     async (ab) => ab.can(PermissionAction.MANAGE, CommentEntity),
 ];
 
+@ApiBearerAuth()
 @ApiTags('评论管理')
-@Depends(ContentModule)
 @Crud(async () => ({
     id: 'comment',
     enabled: [
@@ -41,6 +42,7 @@ const permissions: PermissionChecker[] = [
         list: ManageQueryCommentDto,
     },
 }))
+@Depends(ContentModule)
 @Controller('comments')
 export class CommentController extends BaseController<CommentService> {
     constructor(protected service: CommentService) {
@@ -57,9 +59,11 @@ export class CommentController extends BaseController<CommentService> {
         return this.service.findTrees(query);
     }
 
+    @Permission(permissions[0])
     @Delete()
-    @ApiOperation({ summary: '批量删除评论' })
-    async delete({ ids }: DeleteDto): Promise<any> {
-        return this.service.delete(ids, false);
+    @ApiOperation({ summary: '删除评论' })
+    async delete(@Body() data: DeleteWithTrashDto): Promise<any> {
+        console.log('ids comment', data);
+        return this.service.delete(data.ids, false);
     }
 }

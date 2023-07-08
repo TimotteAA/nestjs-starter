@@ -129,12 +129,13 @@ export abstract class BaseService<
                 withDeleted: this.enableTrash ? true : undefined,
                 relations: ['parent', 'children'],
             });
+            // 将子节点提升一级
             if (this.repository.childrenResolve === TreeChildrenResolve.UP) {
                 for (const item of items) {
                     if (isNil(item.children) || item.children.length <= 0) continue;
                     const nchildren = [...item.children].map((c) => {
                         c.parent = item.parent;
-                        return item;
+                        return c;
                     });
                     await this.repository.save(nchildren);
                 }
@@ -145,14 +146,20 @@ export abstract class BaseService<
                 withDeleted: this.enableTrash ? true : undefined,
             });
         }
+        // console.log('itesm', items, trash);
         if (this.enableTrash && trash) {
+            // 已经软删除过了，拜拜
             const directs = items.filter((item) => !isNil(item.deletedAt));
+            // 没有软删除过
             const softs = items.filter((item) => isNil(item.deletedAt));
+            // console.log('directs', directs);
+            // console.log('softs', softs);
             return [
                 ...(await this.repository.remove(directs)),
                 ...(await this.repository.softRemove(softs)),
             ];
         }
+        // 直接删除
         return this.repository.remove(items);
     }
 
@@ -170,7 +177,9 @@ export abstract class BaseService<
             where: { id: In(ids) as any },
             withDeleted: true,
         });
+        console.log('itmes', items);
         const trasheds = items.filter((item) => !isNil(item));
+        console.log(trasheds);
         if (trasheds.length < 0) return [];
         await this.repository.restore(trasheds.map((item) => item.id));
         const qb = await this.buildListQB(
@@ -200,7 +209,7 @@ export abstract class BaseService<
      * @param callback 查询回调
      */
     protected async buildListQB(qb: SelectQueryBuilder<E>, options?: P, callback?: QueryHook<E>) {
-        const { trashed } = options ?? {};
+        const { trashed } = options || {};
         const queryName = this.repository.qbName;
         // 是否查询回收站
         if (

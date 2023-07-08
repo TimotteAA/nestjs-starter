@@ -30,7 +30,7 @@ export class RbacGuard extends JwtAuthGuard {
         const authCheck = await super.canActivate(context);
         let request = context.switchToHttp().getRequest();
         const requestToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
-        // console.log("authCheck", authCheck)
+        // console.log('authCheck', authCheck, requestToken);
         if (!authCheck) return false;
         // 匿名访问
         if (authCheck && isNil(requestToken)) return true;
@@ -52,7 +52,6 @@ export class RbacGuard extends JwtAuthGuard {
             },
             relations: ['roles.permissions', 'permissions'],
         });
-        // console.log('rbac guard', user);
         // console.log('user', user);
         return solveChecker({
             checkers,
