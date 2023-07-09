@@ -7,9 +7,9 @@ import { Crud, Depends } from '@/modules/restful/decorators';
 
 import { createHookOption } from '@/modules/restful/helpers';
 
-import { CreateUserDto, QueryUserDto, UpdateUserDto } from '../dtos';
-import { UserService } from '../services/user.service';
-import { UserModule } from '../user.module';
+import { CreateUserDto, QueryUserDto, UpdateUserDto } from '../../dtos/manage';
+import { UserService } from '../../services/user.service';
+import { UserModule } from '../../user.module';
 
 /**
  * 用户管理控制器
@@ -24,10 +24,10 @@ import { UserModule } from '../user.module';
             option: createHookOption({ summary: '用户查询,以分页模式展示', guest: true }),
         },
         { name: 'detail', option: createHookOption({ summary: '用户详情', guest: true }) },
-        { name: 'create', option: createHookOption('新增用户') },
-        { name: 'update', option: createHookOption('修改用户信息') },
-        { name: 'delete', option: createHookOption('删除用户') },
-        { name: 'create', option: createHookOption('恢复用户') },
+        { name: 'create', option: createHookOption({ summary: '新增用户', guest: true }) },
+        { name: 'update', option: createHookOption({ summary: '修改用户信息', guest: true }) },
+        { name: 'delete', option: createHookOption({ summary: '删除用户', guest: true }) },
+        { name: 'restore', option: createHookOption({ summary: '恢复用户', guest: true }) },
     ],
     dtos: {
         list: QueryUserDto,

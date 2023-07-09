@@ -1,9 +1,11 @@
 import * as contentControllers from '@/modules/content/controllers';
 import * as contentManageControllers from '@/modules/content/controllers/manage';
+
 import { Configure } from '@/modules/core/configure';
 import * as rbacManageControllers from '@/modules/rbac/controllers';
 import { ApiVersionOption } from '@/modules/restful/types';
 import * as userControllers from '@/modules/user/controllers';
+import * as userMangeControllers from '@/modules/user/controllers/manage';
 
 export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
     routes: [
@@ -68,6 +70,10 @@ export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
                         name: '分类管理',
                         description: '内容模块-分类管理',
                     },
+                    {
+                        name: '用户管理',
+                        description: '用户管理',
+                    },
                 ],
             },
             children: [
@@ -80,6 +86,11 @@ export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
                     name: 'content',
                     path: 'content',
                     controllers: Object.values(contentManageControllers),
+                },
+                {
+                    name: 'user',
+                    path: '/',
+                    controllers: Object.values(userMangeControllers),
                 },
             ],
         },

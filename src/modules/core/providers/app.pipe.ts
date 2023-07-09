@@ -10,7 +10,6 @@ import { DTO_VALIDATION_OPTIONS } from '../constants';
 @Injectable()
 export class AppPipe extends ValidationPipe {
     async transform(value: any, metadata: ArgumentMetadata) {
-        console.log(value, metadata);
         const { metatype, type } = metadata;
         // 获取要验证的dto类
         const dto = metatype as any;

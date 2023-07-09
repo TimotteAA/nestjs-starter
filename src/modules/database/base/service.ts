@@ -81,6 +81,7 @@ export abstract class BaseService<
             const data = await this.list(queryOptions, callback);
             return manualPaginate(options, data) as PaginateReturn<E>;
         }
+        console.log(queryOptions);
         const qb = await this.buildListQB(this.repository.buildBaseQB(), queryOptions, callback);
         return paginate(qb, options);
     }
@@ -146,14 +147,13 @@ export abstract class BaseService<
                 withDeleted: this.enableTrash ? true : undefined,
             });
         }
-        // console.log('itesm', items, trash);
         if (this.enableTrash && trash) {
             // 已经软删除过了，拜拜
             const directs = items.filter((item) => !isNil(item.deletedAt));
             // 没有软删除过
             const softs = items.filter((item) => isNil(item.deletedAt));
-            // console.log('directs', directs);
-            // console.log('softs', softs);
+            console.log('directs', directs);
+            console.log('softs', softs);
             return [
                 ...(await this.repository.remove(directs)),
                 ...(await this.repository.softRemove(softs)),
@@ -210,6 +210,7 @@ export abstract class BaseService<
      */
     protected async buildListQB(qb: SelectQueryBuilder<E>, options?: P, callback?: QueryHook<E>) {
         const { trashed } = options || {};
+        console.log(trashed);
         const queryName = this.repository.qbName;
         // 是否查询回收站
         if (

@@ -17,26 +17,6 @@ export class ContentRbac implements OnModuleInit {
         const resolver = this.moduleRef.get(RbacResolver, { strict: false });
         // 添加权限
         resolver.addPermissions([
-            // 前台权限
-            // {
-            //     name: 'post.create',
-            //     rule: {
-            //         action: PermissionAction.CREATE,
-            //         subject: PostEntity,
-            //     },
-            //     customOrder: 55,
-            // },
-            // {
-            //     name: 'post.owner',
-            //     rule: {
-            //         action: PermissionAction.OWNER,
-            //         subject: PostEntity,
-            //         conditions: (user) => ({
-            //             'author.id': user.id,
-            //         }),
-            //     },
-            //     customOrder: 55,
-            // },
             {
                 name: 'comment.create',
                 rule: {
@@ -70,6 +50,7 @@ export class ContentRbac implements OnModuleInit {
                     action: PermissionAction.MANAGE,
                     subject: PostEntity,
                 },
+                parentName: 'content.manage',
             },
             {
                 name: 'content.category.manage',
@@ -77,6 +58,7 @@ export class ContentRbac implements OnModuleInit {
                     action: PermissionAction.MANAGE,
                     subject: CategoryEntity,
                 },
+                parentName: 'content.manage',
             },
             {
                 name: 'content.comment.manage',
@@ -84,6 +66,7 @@ export class ContentRbac implements OnModuleInit {
                     action: PermissionAction.MANAGE,
                     subject: CommentEntity,
                 },
+                parentName: 'content.manage',
             },
         ]);
 

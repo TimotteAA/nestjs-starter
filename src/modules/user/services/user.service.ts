@@ -1,12 +1,15 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { isNil } from 'lodash';
-import { EntityNotFoundError, SelectQueryBuilder, DataSource } from 'typeorm';
+import { BadRequestException, ForbiddenException, Injectable, OnModuleInit } from '@nestjs/common';
+import { isNil, omit } from 'lodash';
+import { EntityNotFoundError, SelectQueryBuilder, DataSource, In } from 'typeorm';
 
 import { Configure } from '@/modules/core/configure';
 import { BaseService } from '@/modules/database/base';
 import { QueryHook } from '@/modules/database/types';
 
-import { CreateUserDto, QueryUserDto, UpdateUserDto } from '../dtos/user.dto';
+import { SystemRoles } from '@/modules/rbac/constants';
+import { PermissionRepository, RoleRepository } from '@/modules/rbac/repository';
+
+import { CreateUserDto, QueryUserDto, UpdateUserDto } from '../dtos/manage';
 import { UserEntity } from '../entities/user.entity';
 import { getUserConfig } from '../helpers';
 import { UserRepository } from '../repositories/user.repository';
@@ -23,17 +26,17 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
         if (!(await this.configure.get<boolean>('app.server', false))) return null;
         // console.log("user module init>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         const adminConf = await getUserConfig<UserConfig['super']>('super');
-        const admin = await this.repository.findOneBy({
+        const admin = await this.userRepository.findOneBy({
             username: adminConf.username,
         } as any);
         if (!isNil(admin)) {
             if (!admin.isCreator) {
-                await this.repository.save({ id: admin.id, isCreator: true });
+                await this.update({ id: admin.id, isCreator: true });
                 return this.findOneByCredential(admin.username);
             }
             return admin;
         }
-        const res = await this.repository.save({
+        const res = await this.create({
             ...adminConf,
             isCreator: true,
             phone: '+8617301780942',
@@ -42,12 +45,14 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
         return res;
     }
 
-    protected enable_trash = true;
+    protected enableTrash = true;
 
     constructor(
         protected readonly userRepository: UserRepository,
-        protected configure: Configure,
-        protected dataSource: DataSource,
+        protected readonly configure: Configure,
+        protected readonly dataSource: DataSource,
+        protected readonly roleRepo: RoleRepository,
+        protected readonly permissionRepo: PermissionRepository,
     ) {
         super(userRepository);
     }
@@ -56,8 +61,32 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
      * 创建用户
      * @param data
      */
-    async create(data: CreateUserDto) {
-        const user = await this.userRepository.save(data, { reload: true });
+    async create(data: CreateUserDto & { isCreator?: boolean }) {
+        const { permissions, roles, isCreator, ...rest } = data;
+        const user = await this.userRepository.save(
+            {
+                ...rest,
+                isCreator: !!(!isNil(isCreator) && isCreator === true),
+            },
+            { reload: true },
+        );
+
+        if (!isNil(roles) && roles.length > 0) {
+            await this.userRepository
+                .createQueryBuilder('user')
+                .relation(UserEntity, 'roles')
+                .of(user)
+                .add(roles);
+        }
+
+        if (!isNil(permissions) && permissions.length > 0) {
+            await this.userRepository
+                .createQueryBuilder('user')
+                .relation(UserEntity, 'permissions')
+                .of(user)
+                .add(permissions);
+        }
+        // await this.syncActived(user);
         return this.detail(user.id);
     }
 
@@ -65,9 +94,47 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
      * 更新用户
      * @param data
      */
-    async update(data: UpdateUserDto) {
-        const user = await this.userRepository.save(data, { reload: true });
+    async update(data: UpdateUserDto & { isCreator?: boolean }) {
+        const { permissions, roles, ...rest } = data;
+        const user = await this.detail(rest.id);
+        if (user.isCreator && data.actived === false) {
+            throw new ForbiddenException('不能禁用超级用户');
+        }
+        await this.userRepository.save(omit(rest, ['isCreator', 'id']) as any, {
+            reload: true,
+        });
+        const updatedUser = await this.detail(rest.id);
+        if (!isNil(permissions) && permissions.length) {
+            await this.userRepository
+                .createQueryBuilder('user')
+                .relation(UserEntity, 'permissions')
+                .of(updatedUser)
+                .addAndRemove(permissions, updatedUser.permissions ?? []);
+        }
+        if (!isNil(roles) && roles.length) {
+            await this.userRepository
+                .createQueryBuilder('user')
+                .relation(UserEntity, 'roles')
+                .of(updatedUser)
+                .addAndRemove(roles, updatedUser.roles ?? []);
+        }
+        // await this.syncActived(updatedUser);
         return this.detail(user.id);
+    }
+
+    async delete(ids: string[], trash?: boolean): Promise<UserEntity[]> {
+        const users = await this.userRepository.find({
+            where: {
+                id: In(ids),
+            },
+            withDeleted: true,
+        });
+        for (const user of users) {
+            if (user.isCreator) {
+                throw new BadRequestException(`不能删除用户：${user.username}`);
+            }
+        }
+        return super.delete(ids, trash);
     }
 
     /**
@@ -116,5 +183,49 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
         const qb = await super.buildListQB(queryBuilder, options, callback);
         if (orderBy) qb.orderBy(`user.${orderBy}`, 'ASC');
         return qb;
+    }
+
+    protected async syncActived(user: UserEntity) {
+        // user的role和permission，用于后续处理
+        const roleRelation = this.userRepository.createQueryBuilder().relation('roles').of(user);
+        const permissionRelation = this.userRepository
+            .createQueryBuilder()
+            .relation('permissions')
+            .of(user);
+        // 激活的用户
+        if (user.actived) {
+            // 当前用户的所有角色
+            const roleNames = (user.roles ?? []).map((item) => item.name);
+            // 是否没有角色
+            const noRoles =
+                roleNames.length <= 0 ||
+                (!roleNames.includes(SystemRoles.ADMIN) && !roleNames.includes(SystemRoles.USER));
+            const isSuperAdmin = roleNames.includes(SystemRoles.ADMIN);
+
+            if (noRoles) {
+                // 分配普通角色
+                const customRole = await this.roleRepo.findOne({
+                    where: {
+                        name: SystemRoles.USER,
+                    },
+                    relations: ['users'],
+                });
+                if (!isNil(customRole)) await roleRelation.add(customRole);
+            } else if (isSuperAdmin) {
+                // 分配超级管理员角色
+                const adminRole = await this.roleRepo.findOne({
+                    where: {
+                        name: SystemRoles.ADMIN,
+                    },
+                    relations: ['users'],
+                });
+
+                if (!isNil(adminRole)) await roleRelation.addAndRemove(adminRole, user.roles);
+            }
+        } else {
+            // 没有激活的用户，删除所有权限与角色
+            await roleRelation.remove((user.roles ?? []).map((item) => item.id));
+            await permissionRelation.remove((user.permissions ?? []).map((item) => item.id));
+        }
     }
 }

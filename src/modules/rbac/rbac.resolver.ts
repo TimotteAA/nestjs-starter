@@ -57,10 +57,11 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
      * 默认权限
      */
     protected _permissions: PermissionType<A, C>[] = [
+        // 下面是后台权限
         {
             name: 'system.manage',
             label: '系统管理',
-            description: '管理整个系统',
+            description: '管理整个系统，超级管理员权限',
             // casl中的两个关键词
             rule: {
                 action: PermissionAction.MANAGE,
@@ -69,72 +70,85 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             customOrder: 0,
         },
         {
-            name: 'system.permission.manage',
-            label: '系统-权限管理',
-            description: '系统模块-权限管理',
+            name: 'rbac.manage',
+            label: 'rbac模块管理',
+            description: 'Rbac模块管理',
+            rule: {
+                action: PermissionAction.MANAGE,
+                subject: [RoleEntity, PermissionEntity, MenuEntity],
+            } as any,
+            customOrder: 0,
+        },
+        {
+            name: 'rbac.permission.manage',
+            label: '权限管理',
+            description: 'rbac模块-权限管理',
             rule: {
                 action: PermissionAction.MANAGE,
                 subject: PermissionEntity.name,
             } as any,
             customOrder: 1,
+            parentName: 'rbac.manage',
         },
         {
-            name: 'system.role.manage',
-            label: '系统-角色管理',
-            description: '系统模块-角色管理',
+            name: 'rbac.role.manage',
+            label: '角色管理',
+            description: 'rbac模块-角色管理',
             rule: {
                 action: PermissionAction.MANAGE,
                 subject: RoleEntity.name,
             } as any,
             customOrder: 1,
+            parentName: 'rbac.manage',
         },
         {
-            name: 'system.menu.manage',
-            label: '系统-菜单管理',
-            description: '系统模块-菜单管理',
+            name: 'rbac.menu.manage',
+            label: '菜单管理',
+            description: 'rbac模块-菜单管理',
             rule: {
                 action: PermissionAction.MANAGE,
                 subject: MenuEntity.name,
-            },
+            } as any,
             customOrder: 1,
+            parentName: 'rbac.manage',
         },
     ];
 
     protected _menus: Menu[] = [
         {
-            name: 'system.manage',
-            label: '系统管理',
+            name: 'rbac.manage',
+            label: 'Rbac模块管理',
             systemed: true,
-            router: '/system',
+            router: '/rbac',
             customOrder: 0,
-            permissions: ['system.manage'],
+            permissions: ['rbac.manage'],
         },
         {
-            name: 'system.permission.manage',
+            name: 'rbac.permission.manage',
             label: '权限管理',
             systemed: true,
             router: '/permission',
             customOrder: 1,
-            permissions: ['system.permission.manage'],
-            parent: 'system.manage',
+            permissions: ['rbac.permission.manage'],
+            parent: 'rbac.manage',
         },
         {
-            name: 'system.role.manage',
+            name: 'rbac.role.manage',
             label: '角色管理',
             systemed: true,
             router: '/role',
             customOrder: 1,
-            permissions: ['system.role.manage'],
-            parent: 'system.manage',
+            permissions: ['rbac.role.manage'],
+            parent: 'rbac.manage',
         },
         {
-            name: 'system.menu.manage',
+            name: 'rbac.menu.manage',
             label: '菜单管理',
             systemed: true,
             router: '/menu',
             customOrder: 1,
-            permissions: ['system.menu.manage'],
-            parent: 'system.manage',
+            permissions: ['rbac.menu.manage'],
+            parent: 'rbac.manage',
         },
     ];
 
@@ -526,12 +540,29 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                 systemd: true,
             },
         });
-        const toDels: string[] = [];
+        const toDels: MenuEntity[] = [];
         for (const menu of systemMenus) {
             if (!this.menus.find((m) => menu.name === m.name)) {
-                toDels.push(menu.id);
+                toDels.push(menu);
             }
         }
+        // console.log('toDels', toDels);
+        // 删除menu的permission
+        for (const menu of toDels) {
+            const p = await manager.find(PermissionEntity, {
+                where: {
+                    menus: {
+                        id: menu.id,
+                    },
+                },
+            });
+            await manager
+                .createQueryBuilder()
+                .relation(MenuEntity, 'permissions')
+                .of(menu)
+                .remove(p);
+        }
         if (toDels.length) await manager.delete(MenuEntity, toDels);
+        // console.log(12345);
     }
 }

@@ -54,4 +54,13 @@ export class PermissionEntity<
         default: 0,
     })
     customOrder!: number;
+
+    // 父权限名称
+    @Expose()
+    @Column({ nullable: true })
+    parentName?: string;
+
+    // 虚拟字段
+    @Expose({ groups: ['permission-tree'] })
+    children: PermissionEntity[] | null;
 }

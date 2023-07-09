@@ -26,7 +26,7 @@ export type Menu = Pick<ClassToPlain<MenuEntity>, 'name' | 'customOrder' | 'labe
  */
 export type PermissionType<A extends AbilityTuple, C extends MongoQuery> = Pick<
     ClassToPlain<PermissionEntity<A, C>>,
-    'name'
+    'name' | 'parentName'
 > &
     Partial<Pick<ClassToPlain<PermissionEntity<A, C>>, 'label' | 'description' | 'customOrder'>> & {
         rule: Omit<RawRuleFrom<A, C>, 'conditions'> & {

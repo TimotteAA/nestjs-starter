@@ -49,7 +49,6 @@ export abstract class BaseController<S> {
         { ids, trash }: DeleteWithTrashDto,
         ...args: any[]
     ) {
-        console.log('ids', ids, trash);
         return (this.service as any).delete(ids, trash);
     }
 

@@ -41,7 +41,6 @@ export class AppIntercepter extends ClassSerializerInterceptor {
         if ((!isObject(response) && !isArray(response)) || response instanceof StreamableFile) {
             return response;
         }
-
         // 如果是响应数据是数组,则遍历对每一项进行序列化
         if (isArray(response)) {
             return (response as PlainLiteralObject[]).map((item) =>

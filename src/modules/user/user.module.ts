@@ -67,6 +67,7 @@ const jwtModuleRegister = (configure: Configure) => async (): Promise<JwtModuleO
         ...Object.values(services),
         DatabaseModule.forRepository(Object.values(repositories)),
         ...Object.values(queues),
+        ...(await addSubscribers(configure, Object.values(subscribers))),
     ],
 }))
 export class UserModule {}
