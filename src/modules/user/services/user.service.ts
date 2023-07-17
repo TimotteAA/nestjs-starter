@@ -86,7 +86,7 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
                 .of(user)
                 .add(permissions);
         }
-        // await this.syncActived(user);
+        await this.syncActived(user);
         return this.detail(user.id);
     }
 
@@ -118,7 +118,7 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
                 .of(updatedUser)
                 .addAndRemove(roles, updatedUser.roles ?? []);
         }
-        // await this.syncActived(updatedUser);
+        await this.syncActived(updatedUser);
         return this.detail(user.id);
     }
 
@@ -201,7 +201,6 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
                 roleNames.length <= 0 ||
                 (!roleNames.includes(SystemRoles.ADMIN) && !roleNames.includes(SystemRoles.USER));
             const isSuperAdmin = roleNames.includes(SystemRoles.ADMIN);
-
             if (noRoles) {
                 // 分配普通角色
                 const customRole = await this.roleRepo.findOne({

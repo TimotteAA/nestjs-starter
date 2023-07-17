@@ -1,17 +1,24 @@
 // @ts-ignore
 import { BullModule } from '@nestjs/bullmq';
-import { omit } from 'lodash';
+
+import Redis from 'ioredis';
 
 import { ModuleBuilder } from '../core/decorators';
+
+import { RedisConfig } from '../redis/types';
 
 import { QueueConfig } from './types';
 
 @ModuleBuilder(async (configure) => {
     const queues = await configure.get<QueueConfig>('queue');
+    const redisOptions = await configure.get<RedisConfig>('redis');
 
     return {
         global: true,
-        imports: queues.map((queue) => BullModule.forRoot(queue.redis, omit(queue, ['redis']))),
+        imports: queues.map((queue) => {
+            const redisOption = redisOptions.find((o) => o.name === queue.redis).connectOptions;
+            return BullModule.forRoot({ connection: new Redis(redisOption) });
+        }),
     };
 })
 export class QueueModule {}

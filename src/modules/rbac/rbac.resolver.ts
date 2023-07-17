@@ -243,6 +243,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
      * @param manager
      */
     protected async syncRoles(manager: EntityManager) {
+        // 内存中的系统角色
         this._roles = this.roles.reduce<Role[]>((o, n) => {
             if (o.map(({ name }) => name).includes(n.name)) {
                 // 相同名称的role，将两者进行合并
@@ -341,6 +342,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             // 去掉rule.conditions
             // const permission = omit(item, ['conditions']);
             const permission = { ...item, rule: omit(item.rule, 'conditions') };
+
             // console.log("4", permission)
             const old = await manager.findOne(PermissionEntity, {
                 where: {
@@ -348,9 +350,9 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                 },
             });
             if (isNil(old)) {
-                await manager.save(manager.create(PermissionEntity, omit(permission, ['menu'])));
+                await manager.save(manager.create(PermissionEntity, permission));
             } else {
-                await manager.update(PermissionEntity, old.id, omit(permission, ['menu']));
+                await manager.update(PermissionEntity, old.id, permission);
             }
         }
 
@@ -375,7 +377,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             // const p = this.roles.find(r => r.name === role.name).permissions
             // 动态创建的角色不会同步
             const roleMemory = this.roles.find((r) => r.name === role.name);
-
+            // 处理权限
             if (roleMemory) {
                 // 新配置的权限
                 const rolePermissions = await manager.findBy(PermissionEntity, {
@@ -417,10 +419,13 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             .createQueryBuilder('role')
             .relation(RoleEntity, 'permissions')
             .of(superRole)
-            .addAndRemove(
-                [systemManage.id],
-                (superRole.permissions ?? []).map(({ id }) => id),
-            );
+            .remove((superRole.permissions ?? []).map(({ id }) => id));
+
+        await roleRepo
+            .createQueryBuilder('role')
+            .relation(RoleEntity, 'permissions')
+            .of(superRole)
+            .add([systemManage.id]);
 
         // 添加超级管理员角色到初始用户
         // 用户与角色未同步过的，superRole.id这个Entity已经同步权限了
@@ -430,7 +435,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             },
             relations: ['roles', 'permissions'],
         });
-        // console.log('superUser', superUser);
+        console.log('superUser', superUser);
         // console.log("superRole", superRole)
 
         // 不为空
@@ -440,10 +445,13 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                 .createQueryBuilder('user')
                 .relation(UserEntity, 'roles')
                 .of(superUser)
-                .addAndRemove(
-                    [superRole.id],
-                    (superUser.roles ?? []).map(({ id }) => id),
-                );
+                .remove((superUser.roles ?? []).map(({ id }) => id));
+
+            await userRepo
+                .createQueryBuilder('user')
+                .relation(UserEntity, 'roles')
+                .of(superUser)
+                .add([superRole.id]);
         }
     }
 
