@@ -37,11 +37,6 @@ const permissions: PermissionChecker[] = [
 }))
 @Controller('permissions')
 export class PermissionController extends BaseController<PermissionService> {
-    // 前端权限
-    private appPermissionNames: Set<string> = new Set<string>()
-        .add('comment.owner')
-        .add('comment.create');
-
     constructor(protected permissionService: PermissionService) {
         super(permissionService);
     }
@@ -61,40 +56,6 @@ export class PermissionController extends BaseController<PermissionService> {
     @Guest()
     @Get('tree')
     async tree() {
-        const list = await this.permissionService.list({});
-        return this.listToTree(list);
-    }
-
-    protected listToTree(list: ClassToPlain<PermissionEntity>[]) {
-        // 创建一个以id为键的项目映射
-        const itemsMap: Record<string, ClassToPlain<PermissionEntity>> = {};
-        list.forEach((item) => {
-            item.children = [];
-            itemsMap[item.id] = item;
-        });
-
-        // 创建一个空数组，用于存储根节点
-        const roots: ClassToPlain<PermissionEntity>[] = [];
-        // 过滤掉前端权限
-        const managePermissions = list.filter((p) => !this.appPermissionNames.has(p.name));
-        // 对于每个项目
-        for (const item of managePermissions) {
-            // 如果该项目有父项目
-            if (item.parentName) {
-                // 查找该项目的父项目
-                const parentItem = list.find((parent) => parent.name === item.parentName);
-                console.log('parentItem', parentItem);
-                if (parentItem) {
-                    // 将该项目添加到父项目的children数组中
-                    parentItem.children = parentItem.children || [];
-                    parentItem.children.push(itemsMap[item.id]);
-                }
-            } else {
-                // 如果该项目没有父项目，将它添加到根节点
-                roots.push(itemsMap[item.id]);
-            }
-            // console.log('item', item);
-        }
-        return roots;
+        return this.permissionService.findTrees();
     }
 }

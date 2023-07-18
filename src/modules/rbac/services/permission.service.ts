@@ -27,6 +27,10 @@ export class PermissionService extends BaseService<
         super(repo);
     }
 
+    findTrees() {
+        return this.repository.findTrees();
+    }
+
     /**
      * 查询某个角色的权限
      * @param qb

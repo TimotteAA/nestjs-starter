@@ -1,15 +1,18 @@
 import { AbilityTuple, MongoQuery, RawRuleFrom } from '@casl/ability';
 
-import { Exclude, Expose } from 'class-transformer';
-import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { Column, Entity, JoinTable, ManyToMany, Tree, TreeChildren, TreeParent } from 'typeorm';
 
 import { BaseEntity } from '@/modules/database/base';
 import { UserEntity } from '@/modules/user/entities';
+
+import { MenuType } from '../constants';
 
 import { MenuEntity } from './menu.entity';
 import { RoleEntity } from './role.entity';
 
 @Exclude()
+@Tree('materialized-path')
 @Entity('rbac_permission')
 export class PermissionEntity<
     A extends AbilityTuple = AbilityTuple,
@@ -28,23 +31,19 @@ export class PermissionEntity<
     description?: string;
 
     @Expose()
-    @Column({ comment: '具体的权限规则', type: 'simple-json' })
-    rule!: Omit<RawRuleFrom<A, C>, 'conditions'>;
+    @Column({ comment: '具体的权限规则', type: 'simple-json', nullable: true })
+    rule?: Omit<RawRuleFrom<A, C>, 'conditions'>;
 
     @Expose({ groups: ['permission-detail', 'permission-list'] })
     @ManyToMany(() => RoleEntity, (role: RoleEntity) => role.permissions)
     @JoinTable()
     roles!: RoleEntity[];
 
-    @ManyToMany(() => UserEntity, (user: UserEntity) => user.permissions, {
-        // onDelete: 'NO ACTION',
-    })
+    @ManyToMany(() => UserEntity, (user: UserEntity) => user.permissions)
     @JoinTable()
     users!: UserEntity[];
 
-    @ManyToMany(() => MenuEntity, (menu: MenuEntity) => menu.permissions, {
-        // onDelete: 'NO ACTION',
-    })
+    @ManyToMany(() => MenuEntity, (menu: MenuEntity) => menu.permissions)
     @JoinTable()
     menus: MenuEntity[];
 
@@ -55,12 +54,55 @@ export class PermissionEntity<
     })
     customOrder!: number;
 
-    // 父权限名称
     @Expose()
-    @Column({ nullable: true })
-    parentName?: string;
+    @Type(() => PermissionEntity)
+    @TreeParent()
+    parent: PermissionEntity | null;
 
-    // 虚拟字段
-    @Expose({ groups: ['permission-tree'] })
-    children: PermissionEntity[] | null;
+    @Expose()
+    @Type(() => PermissionEntity)
+    @TreeChildren()
+    children: PermissionEntity[];
+
+    /** ******************************************menu字段***************************************************** */
+    @Column({
+        comment: '菜单类型，0是目录，1是菜单项，2是权限',
+        enum: MenuType,
+        default: MenuType.DIRECTORY,
+        type: 'enum',
+    })
+    type!: MenuType;
+
+    @Column({
+        comment: '菜单展示的icon',
+        nullable: true,
+    })
+    icon?: string;
+
+    @Column({
+        comment: '路由对应前端组件',
+        nullable: true,
+    })
+    component?: string;
+
+    @Column({
+        comment: '菜单链接',
+        nullable: false,
+    })
+    router!: string;
+
+    @Column({ comment: '是否是外链', default: false })
+    isLink?: boolean;
+
+    @Column({
+        comment: '是否缓存',
+        default: true,
+    })
+    keepAlive?: boolean;
+
+    @Column({
+        comment: '是否显示',
+        default: true,
+    })
+    isShow?: boolean;
 }
