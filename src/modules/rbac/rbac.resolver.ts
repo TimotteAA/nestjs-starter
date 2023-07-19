@@ -10,8 +10,8 @@ import { UserEntity } from '../user/entities';
 import { getUserConfig } from '../user/helpers';
 import { UserConfig } from '../user/types';
 
-import { PermissionAction, SystemRoles } from './constants';
-import { MenuEntity, PermissionEntity, RoleEntity } from './entities';
+import { MenuType, PermissionAction, SystemRoles } from './constants';
+import { PermissionEntity, RoleEntity } from './entities';
 import { PermissionType, Role } from './types';
 
 /**
@@ -57,100 +57,92 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
      * 默认权限
      */
     protected _permissions: PermissionType<A, C>[] = [
+        {
+            name: 'global.permission',
+            type: MenuType.PERMISSION,
+        },
         // 下面是后台权限
         {
             name: 'system.manage',
             label: '系统管理',
-            description: '管理整个系统，超级管理员权限',
             // casl中的两个关键词
             rule: {
                 action: PermissionAction.MANAGE,
                 subject: 'all',
             } as any,
             customOrder: 0,
+            type: MenuType.DIRECTORY,
         },
         {
             name: 'rbac.manage',
             label: 'rbac模块管理',
-            description: 'Rbac模块管理',
-            rule: {
-                action: PermissionAction.MANAGE,
-                subject: [RoleEntity, PermissionEntity, MenuEntity],
-            } as any,
             customOrder: 0,
+            type: MenuType.DIRECTORY,
         },
         {
             name: 'rbac.permission.manage',
             label: '权限管理',
-            description: 'rbac模块-权限管理',
-            rule: {
-                action: PermissionAction.MANAGE,
-                subject: PermissionEntity.name,
-            } as any,
-            customOrder: 1,
+            type: MenuType.MENU,
             parentName: 'rbac.manage',
         },
         {
             name: 'rbac.role.manage',
             label: '角色管理',
-            description: 'rbac模块-角色管理',
-            rule: {
-                action: PermissionAction.MANAGE,
-                subject: RoleEntity.name,
-            } as any,
-            customOrder: 1,
             parentName: 'rbac.manage',
+            type: MenuType.MENU,
+        },
+        // crud of roles
+        {
+            name: 'rabc.role.create',
+            label: '创建角色',
+            parentName: 'rbac.role.manage',
+            type: MenuType.PERMISSION,
+            rule: {
+                action: PermissionAction.CREATE,
+                subject: RoleEntity,
+            } as any,
         },
         {
-            name: 'rbac.menu.manage',
-            label: '菜单管理',
-            description: 'rbac模块-菜单管理',
+            name: 'rabc.role.read_list',
+            label: '分页查询角色',
+            parentName: 'rbac.role.manage',
+            type: MenuType.PERMISSION,
             rule: {
-                action: PermissionAction.MANAGE,
-                subject: MenuEntity.name,
+                action: PermissionAction.READ_LIST,
+                subject: RoleEntity,
             } as any,
-            customOrder: 1,
-            parentName: 'rbac.manage',
+        },
+        {
+            name: 'rabc.role.update',
+            label: '更新角色',
+            parentName: 'rbac.role.manage',
+            type: MenuType.PERMISSION,
+            rule: {
+                action: PermissionAction.UPDATE,
+                subject: RoleEntity,
+            } as any,
+        },
+        {
+            name: 'rabc.role.detail',
+            label: '查询角色详情',
+            parentName: 'rbac.role.manage',
+            type: MenuType.PERMISSION,
+            rule: {
+                action: PermissionAction.READ_DETAIL,
+                subject: RoleEntity,
+            } as any,
+        },
+        {
+            name: 'rabc.role.delete',
+            label: '删除角色',
+            parentName: 'rbac.role.delete',
+            type: MenuType.PERMISSION,
+            rule: {
+                action: PermissionAction.DELETE,
+                subject: RoleEntity,
+            } as any,
         },
     ];
-
-    // protected _menus: Menu[] = [
-    //     {
-    //         name: 'rbac.manage',
-    //         label: 'Rbac模块管理',
-    //         systemed: true,
-    //         router: '/rbac',
-    //         customOrder: 0,
-    //         permissions: ['rbac.manage'],
-    //     },
-    //     {
-    //         name: 'rbac.permission.manage',
-    //         label: '权限管理',
-    //         systemed: true,
-    //         router: '/permission',
-    //         customOrder: 1,
-    //         permissions: ['rbac.permission.manage'],
-    //         parent: 'rbac.manage',
-    //     },
-    //     {
-    //         name: 'rbac.role.manage',
-    //         label: '角色管理',
-    //         systemed: true,
-    //         router: '/role',
-    //         customOrder: 1,
-    //         permissions: ['rbac.role.manage'],
-    //         parent: 'rbac.manage',
-    //     },
-    //     {
-    //         name: 'rbac.menu.manage',
-    //         label: '菜单管理',
-    //         systemed: true,
-    //         router: '/menu',
-    //         customOrder: 1,
-    //         permissions: ['rbac.menu.manage'],
-    //         parent: 'rbac.manage',
-    //     },
-    // ];
 
     constructor(protected dataSource: DataSource, protected configure: Configure) {}
 
@@ -170,10 +162,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         return this._permissions;
     }
 
-    // get menus() {
-    //     return this._menus;
-    // }
-
     /**
      * 每个模块添加角色
      * @param data
@@ -188,25 +176,22 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
      */
     addPermissions(data: PermissionType<A, C>[]) {
         this._permissions = [...this._permissions, ...data].map((item) => {
+            if (isNil(item.rule)) return { ...item };
             let subject: typeof item.rule.subject;
             // 确保Subject是字符串或字符串数组
-            if (Array.isArray(item.rule.subject))
-                subject = item.rule.subject.map((s) => getSubject(s));
-            else subject = getSubject(item.rule.subject);
+            if (Array.isArray(item?.rule?.subject))
+                subject = item?.rule?.subject.map((s) => getSubject(s));
+            else subject = getSubject(item?.rule?.subject);
 
             const rule = { ...item.rule, subject };
             return { ...item, rule };
         });
     }
 
-    // addMenus(data: Menu[]) {
-    //     this._menus = [...this._menus, ...data];
-    // }
-
     async onApplicationBootstrap() {
-        // console.log(
-        //     'app start ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
-        // );
+        console.log(
+            'app start ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
+        );
         // // 在运行cli时防止报错
         // console.log(await this.configure.get<boolean>('app'));
         if (!(await this.configure.get<boolean>('app.server', false))) return;
@@ -341,18 +326,39 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         for (const item of this.permissions) {
             // 去掉rule.conditions
             // const permission = omit(item, ['conditions']);
-            const permission = { ...item, rule: omit(item.rule, 'conditions') };
+            const permission = {
+                ...item,
+                rule: omit(item.rule, 'conditions'),
+                parent: isNil(item.parentName)
+                    ? null
+                    : await manager.findOne(PermissionEntity, {
+                          where: {
+                              name: item.parentName,
+                          },
+                      }),
+            };
 
             // console.log("4", permission)
             const old = await manager.findOne(PermissionEntity, {
                 where: {
                     name: permission.name,
                 },
+                relations: ['parent'],
             });
             if (isNil(old)) {
                 await manager.save(manager.create(PermissionEntity, permission));
             } else {
-                await manager.update(PermissionEntity, old.id, permission);
+                if (permission.parent.name !== old.parent.name) {
+                    // remove parent
+                    await manager
+                        .createQueryBuilder()
+                        .relation(PermissionEntity, 'parent')
+                        .of(old)
+                        .set(null);
+                    await manager.update(PermissionEntity, old.id, permission);
+                } else {
+                    await manager.update(PermissionEntity, old.id, omit(permission, ['parent']));
+                }
             }
         }
 
@@ -375,30 +381,40 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         // console.log('roles', roles);
         for (const role of roles) {
             // const p = this.roles.find(r => r.name === role.name).permissions
-            // 动态创建的角色不会同步
-            const roleMemory = this.roles.find((r) => r.name === role.name);
-            // 处理权限
-            if (roleMemory) {
-                // 新配置的权限
-                const rolePermissions = await manager.findBy(PermissionEntity, {
-                    // 新配置的role的权限
-                    name: In(roleMemory.permissions),
-                });
-                const oldPermissions = role.permissions;
-                await manager
-                    .createQueryBuilder()
-                    .relation(RoleEntity, 'permissions')
-                    .of(role)
-                    .remove(oldPermissions);
+            // // 动态创建的角色不会同步
+            // const roleMemory = this.roles.find((r) => r.name === role.name);
+            // // 处理权限
+            // if (roleMemory) {
+            //     // 新配置的权限
+            //     const rolePermissions = await manager.findBy(PermissionEntity, {
+            //         // 新配置的role的权限
+            //         name: In(roleMemory.permissions),
+            //     });
+            //     const oldPermissions = role.permissions;
+            //     await manager
+            //         .createQueryBuilder()
+            //         .relation(RoleEntity, 'permissions')
+            //         .of(role)
+            //         .remove(oldPermissions);
 
-                await manager
-                    .createQueryBuilder()
-                    .relation(RoleEntity, 'permissions')
-                    .of(role)
-                    .add(rolePermissions);
-            }
+            //     await manager
+            //         .createQueryBuilder()
+            //         .relation(RoleEntity, 'permissions')
+            //         .of(role)
+            //         .add(rolePermissions);
+            // }
+            const rolePermissions = await manager.findBy(PermissionEntity, {
+                name: In(this.roles.find(({ name }) => name === role.name).permissions),
+            });
+            await roleRepo
+                .createQueryBuilder('role')
+                .relation(RoleEntity, 'permissions')
+                .of(role)
+                .addAndRemove(
+                    rolePermissions.map(({ id }) => id),
+                    (role.permissions ?? []).map(({ id }) => id),
+                );
         }
-
         /** *********** 同步超级管理员 *************** */
         // 数据库中的超级管理员角色
         // 未同步的系统管理员角色及其权限
@@ -454,123 +470,4 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                 .add([superRole.id]);
         }
     }
-
-    // protected async syncMenus(manager: EntityManager) {
-    //     this._menus = this._menus.reduce<Menu[]>((o, n) => {
-    //         if (o.map(({ name }) => name).includes(n.name)) {
-    //             // 相同名称的menu，将两者进行合并
-    //             return o.map((e) => (e.name === n.name ? deepMerge(e, n, 'merge') : e));
-    //         }
-    //         return [...o, n];
-    //     }, []);
-
-    //     for (const item of this.menus) {
-    //         let menu = await manager.findOne(MenuEntity, {
-    //             where: {
-    //                 name: item.name,
-    //             },
-    //         });
-    //         if (isNil(menu)) {
-    //             // 原来没有menu
-    //             menu = manager.create(MenuEntity, {
-    //                 name: item.name,
-    //                 label: item.label,
-    //                 router: item.router,
-    //                 customOrder: item.customOrder,
-    //                 parent: isNil(item.parent)
-    //                     ? null
-    //                     : await manager.findOne(MenuEntity, {
-    //                           where: {
-    //                               name: item.parent,
-    //                           },
-    //                       }),
-    //                 permissions: !isNil(item.permissions)
-    //                     ? await manager.find(PermissionEntity, {
-    //                           where: {
-    //                               name: In(item.permissions),
-    //                           },
-    //                       })
-    //                     : null,
-    //                 systemd: true,
-    //             });
-
-    //             await manager.save(menu, {
-    //                 reload: true,
-    //             });
-    //         } else {
-    //             await manager.update(MenuEntity, menu.id, {
-    //                 name: item.name,
-    //                 label: item.label,
-    //                 router: item.router,
-    //                 customOrder: item.customOrder,
-    //                 parent: isNil(item.parent)
-    //                     ? null
-    //                     : await manager.findOne(MenuEntity, {
-    //                           where: {
-    //                               name: item.parent,
-    //                           },
-    //                       }),
-    //                 systemd: true,
-    //             });
-    //             menu = await manager.findOne(MenuEntity, {
-    //                 where: {
-    //                     id: menu.id,
-    //                 },
-    //                 relations: ['permissions'],
-    //             });
-    //             const permissions = await manager.find(PermissionEntity, {
-    //                 where: {
-    //                     name: In(item.permissions),
-    //                 },
-    //                 relations: ['menus'],
-    //             });
-    //             const oldPermissions = menu.permissions;
-    //             const toBeRemoved = oldPermissions.filter(
-    //                 (op) => !item.permissions.includes(op.name),
-    //             );
-
-    //             await manager
-    //                 .createQueryBuilder()
-    //                 .relation(MenuEntity, 'permissions')
-    //                 .of(menu)
-    //                 .remove(toBeRemoved);
-
-    //             await manager
-    //                 .createQueryBuilder()
-    //                 .relation(MenuEntity, 'permissions')
-    //                 .of(menu)
-    //                 .addAndRemove(permissions ?? [], menu.permissions ?? []);
-    //         }
-    //     }
-
-    //     const systemMenus = await manager.find(MenuEntity, {
-    //         where: {
-    //             systemd: true,
-    //         },
-    //     });
-    //     const toDels: MenuEntity[] = [];
-    //     for (const menu of systemMenus) {
-    //         if (!this.menus.find((m) => menu.name === m.name)) {
-    //             toDels.push(menu);
-    //         }
-    //     }
-    //     // console.log('toDels', toDels);
-    //     // 删除menu的permission
-    //     for (const menu of toDels) {
-    //         const p = await manager.find(PermissionEntity, {
-    //             where: {
-    //                 menus: {
-    //                     id: menu.id,
-    //                 },
-    //             },
-    //         });
-    //         await manager
-    //             .createQueryBuilder()
-    //             .relation(MenuEntity, 'permissions')
-    //             .of(menu)
-    //             .remove(p);
-    //     }
-    //     if (toDels.length) await manager.delete(MenuEntity, toDels);
-    //     // console.log(12345);
-    // }
 }

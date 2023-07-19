@@ -1,11 +1,10 @@
 import { randomBytes } from 'crypto';
 
-import { isNil } from 'lodash';
 import { EventSubscriber, In, InsertEvent, UpdateEvent } from 'typeorm';
 
 import { BaseSubscriber } from '@/modules/database/base';
 
-import { MenuEntity, PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
+import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
 
 import { UserEntity } from '../entities/user.entity';
 import { encrypt } from '../helpers';
@@ -77,7 +76,6 @@ export class UserSubscriber extends BaseSubscriber<UserEntity> {
                         id: role.id,
                     },
                 },
-                relations: ['menus'],
             });
             if (Array.isArray(rolePermissions) && rolePermissions.length) {
                 permissions.push(...rolePermissions);
@@ -91,42 +89,5 @@ export class UserSubscriber extends BaseSubscriber<UserEntity> {
         }, []);
         // console.log('permissions', permissions);
         entity.permissions = permissions;
-
-        // 根据权限得到菜单;
-        let menus: MenuEntity[];
-        if (permissions.map(({ name }) => name).includes('system.manage')) {
-            menus = await MenuEntity.find({
-                relations: ['parent'],
-            });
-            menus = this.menuListToTree(menus);
-        } else {
-            menus = permissions.map((p) => p.menus).reduce((o, n) => [...o, ...n], []);
-            menus = this.menuListToTree(menus);
-        }
-
-        entity.menus = menus;
-    }
-
-    protected menuListToTree(menus: MenuEntity[]) {
-        if (isNil(menus) || !Array.isArray(menus) || menus.length === 0) return [];
-        const map: { [key: string]: MenuEntity } = {};
-        let node: MenuEntity;
-        const roots: MenuEntity[] = [];
-
-        for (let i = 0; i < menus.length; i += 1) {
-            map[menus[i].id] = menus[i]; // initialize the map
-            menus[i].children = []; // initialize the children
-        }
-
-        for (let i = 0; i < menus.length; i += 1) {
-            node = menus[i];
-            if (node.parent !== null) {
-                // if you have dangling branches check that map[node.parentId] exists
-                map[node.parent.id].children!.push(node);
-            } else {
-                roots.push(node);
-            }
-        }
-        return roots;
     }
 }

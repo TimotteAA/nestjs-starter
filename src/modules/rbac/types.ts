@@ -6,7 +6,7 @@ import { CrudMethodOption, CrudMethod, CrudOptions } from '@/modules/restful/typ
 
 import { UserEntity } from '../user/entities';
 
-import { RoleEntity, PermissionEntity, MenuEntity } from './entities';
+import { RoleEntity, PermissionEntity } from './entities';
 
 /**
  * 角色类型：角色名、别名、描述、权限
@@ -15,35 +15,19 @@ export type Role = Pick<ClassToPlain<RoleEntity>, 'name' | 'label' | 'descriptio
     permissions: string[];
 };
 
-export type Menu = Pick<ClassToPlain<MenuEntity>, 'name' | 'customOrder' | 'label' | 'router'> & {
-    permissions?: string[];
-    parent?: string;
-    systemed: true;
-};
-
 /**
  * 权限类型：名称、别名、描述、具体的rule，去掉了casl中的conditions，自定义了conditions
  */
 export type PermissionType<A extends AbilityTuple, C extends MongoQuery> = Pick<
     ClassToPlain<PermissionEntity<A, C>>,
-    | 'name'
-    | 'component'
-    | 'type'
-    | 'icon'
-    | 'isLink'
-    | 'isShow'
-    | 'keepAlive'
-    | 'description'
-    | 'label'
-    | 'customOrder'
-    | 'router'
+    'name' | 'label' | 'component' | 'external' | 'icon' | 'keepAlive' | 'path' | 'type'
 > &
-    Partial<Pick<ClassToPlain<PermissionEntity<A, C>>, 'label' | 'description' | 'customOrder'>> & {
-        rule: Omit<RawRuleFrom<A, C>, 'conditions'> & {
+    Partial<Pick<ClassToPlain<PermissionEntity<A, C>>, 'label' | 'customOrder'>> & {
+        rule?: Omit<RawRuleFrom<A, C>, 'conditions'> & {
             conditions?: (user: ClassToPlain<UserEntity>) => Record<string, any>;
         };
     } & {
-        parentName: string;
+        parentName?: string;
     };
 
 /**

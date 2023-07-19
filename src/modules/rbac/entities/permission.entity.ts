@@ -8,7 +8,6 @@ import { UserEntity } from '@/modules/user/entities';
 
 import { MenuType } from '../constants';
 
-import { MenuEntity } from './menu.entity';
 import { RoleEntity } from './role.entity';
 
 @Exclude()
@@ -27,10 +26,6 @@ export class PermissionEntity<
     label?: string;
 
     @Expose()
-    @Column({ comment: '权限描述', type: 'text', nullable: true })
-    description?: string;
-
-    @Expose()
     @Column({ comment: '具体的权限规则', type: 'simple-json', nullable: true })
     rule?: Omit<RawRuleFrom<A, C>, 'conditions'>;
 
@@ -42,10 +37,6 @@ export class PermissionEntity<
     @ManyToMany(() => UserEntity, (user: UserEntity) => user.permissions)
     @JoinTable()
     users!: UserEntity[];
-
-    @ManyToMany(() => MenuEntity, (menu: MenuEntity) => menu.permissions)
-    @JoinTable()
-    menus: MenuEntity[];
 
     @Expose()
     @Column({
@@ -74,6 +65,12 @@ export class PermissionEntity<
     type!: MenuType;
 
     @Column({
+        comment: '菜单链接',
+        nullable: true,
+    })
+    path?: string;
+
+    @Column({
         comment: '菜单展示的icon',
         nullable: true,
     })
@@ -85,14 +82,8 @@ export class PermissionEntity<
     })
     component?: string;
 
-    @Column({
-        comment: '菜单链接',
-        nullable: false,
-    })
-    router!: string;
-
     @Column({ comment: '是否是外链', default: false })
-    isLink?: boolean;
+    external?: boolean;
 
     @Column({
         comment: '是否缓存',
@@ -104,5 +95,5 @@ export class PermissionEntity<
         comment: '是否显示',
         default: true,
     })
-    isShow?: boolean;
+    show?: boolean;
 }

@@ -73,6 +73,7 @@ export class App {
                 await this._app.init();
             }
         } catch (error) {
+            console.log('error', error);
             panic({ message: 'Create app failed!', error });
             exit(0);
         }

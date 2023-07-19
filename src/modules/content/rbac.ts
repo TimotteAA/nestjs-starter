@@ -1,10 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
-import { PermissionAction, SystemRoles } from '../rbac/constants';
+import { MenuType, PermissionAction, SystemRoles } from '../rbac/constants';
 import { RbacResolver } from '../rbac/rbac.resolver';
 
-import { CategoryEntity, CommentEntity, PostEntity } from './entities';
+import { CommentEntity, PostEntity } from './entities';
 
 /**
  * 模块启动时，添加权限与角色
@@ -24,6 +24,8 @@ export class ContentRbac implements OnModuleInit {
                     subject: CommentEntity,
                 },
                 customOrder: 55,
+                type: MenuType.PERMISSION,
+                parentName: 'global.permission',
             },
             {
                 name: 'comment.owner',
@@ -35,38 +37,81 @@ export class ContentRbac implements OnModuleInit {
                     }),
                 },
                 customOrder: 55,
+                type: MenuType.PERMISSION,
+                parentName: 'global.permission',
             },
             // 后台权限：三个Entity的管理
             {
                 name: 'content.manage',
-                rule: {
-                    action: PermissionAction.MANAGE,
-                    subject: [CommentEntity, PostEntity, CategoryEntity],
-                },
+                type: MenuType.DIRECTORY,
             },
             {
                 name: 'content.post.manage',
-                rule: {
-                    action: PermissionAction.MANAGE,
-                    subject: PostEntity,
-                },
                 parentName: 'content.manage',
+                type: MenuType.MENU,
             },
             {
                 name: 'content.category.manage',
-                rule: {
-                    action: PermissionAction.MANAGE,
-                    subject: CategoryEntity,
-                },
-                parentName: 'content.manage',
+                type: MenuType.MENU,
             },
             {
                 name: 'content.comment.manage',
+                type: MenuType.MENU,
+            },
+            // post crud
+            {
+                name: 'content.post.create',
+                parentName: 'content.post.manage',
+                type: MenuType.PERMISSION,
                 rule: {
-                    action: PermissionAction.MANAGE,
-                    subject: CommentEntity,
+                    action: PermissionAction.CREATE,
+                    subject: PostEntity,
                 },
-                parentName: 'content.manage',
+            },
+            {
+                name: 'content.post.delete',
+                parentName: 'content.post.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.DELETE,
+                    subject: PostEntity,
+                },
+            },
+            {
+                name: 'content.post.update',
+                parentName: 'content.post.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.UPDATE,
+                    subject: PostEntity,
+                },
+            },
+            {
+                name: 'content.post.restore',
+                parentName: 'content.post.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.RESTORE,
+                    subject: PostEntity,
+                },
+            },
+            {
+                name: 'content.post.read_list',
+                parentName: 'content.post.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.READ_LIST,
+                    subject: PostEntity,
+                },
+            },
+            {
+                name: 'content.post.read_detail',
+                parentName: 'content.post.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.READ_DETAIL,
+                    subject: PostEntity,
+                },
             },
         ]);
 
@@ -75,44 +120,6 @@ export class ContentRbac implements OnModuleInit {
             {
                 name: SystemRoles.USER,
                 permissions: ['comment.create', 'comment.owner'],
-            },
-        ]);
-
-        resolver.addMenus([
-            {
-                name: 'content.manage',
-                label: '内容模块管理',
-                systemed: true,
-                router: '/content',
-                customOrder: 0,
-                permissions: ['content.manage'],
-            },
-            {
-                name: 'content.post.manage',
-                label: '文章管理',
-                systemed: true,
-                router: '/post',
-                customOrder: 1,
-                permissions: ['content.post.manage'],
-                parent: 'content.manage',
-            },
-            {
-                name: 'content.comment.manage',
-                label: '评论管理',
-                systemed: true,
-                router: '/comment',
-                customOrder: 1,
-                permissions: ['content.comment.manage'],
-                parent: 'content.manage',
-            },
-            {
-                name: 'content.category.manage',
-                label: '分类管理',
-                systemed: true,
-                router: '/category',
-                customOrder: 1,
-                permissions: ['content.category.manage'],
-                parent: 'content.manage',
             },
         ]);
     }

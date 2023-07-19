@@ -16,7 +16,7 @@ import { BaseEntity } from '@/modules/database/base';
 import { AddRelations } from '@/modules/database/decorators';
 import { DynamicRelation } from '@/modules/database/types';
 
-import { MenuEntity, PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
+import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
 
 import { getUserConfig } from '../helpers';
 
@@ -101,11 +101,4 @@ export class UserEntity extends BaseEntity {
     })
     @JoinTable()
     roles!: RoleEntity[];
-
-    @Expose({ groups: ['user-detail'] })
-    @ManyToMany(() => MenuEntity, (menu: MenuEntity) => menu.users, {
-        cascade: true,
-    })
-    @JoinTable()
-    menus!: MenuEntity[];
 }
