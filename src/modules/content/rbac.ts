@@ -4,7 +4,7 @@ import { ModuleRef } from '@nestjs/core';
 import { MenuType, PermissionAction, SystemRoles } from '../rbac/constants';
 import { RbacResolver } from '../rbac/rbac.resolver';
 
-import { CommentEntity, PostEntity } from './entities';
+import { CategoryEntity, CommentEntity, PostEntity } from './entities';
 
 /**
  * 模块启动时，添加权限与角色
@@ -111,6 +111,98 @@ export class ContentRbac implements OnModuleInit {
                 rule: {
                     action: PermissionAction.READ_DETAIL,
                     subject: PostEntity,
+                },
+            },
+            // category crud
+            {
+                name: 'content.category.create',
+                parentName: 'content.category.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.CREATE,
+                    subject: CategoryEntity,
+                },
+            },
+            {
+                name: 'content.category.delete',
+                parentName: 'content.category.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.DELETE,
+                    subject: CategoryEntity,
+                },
+            },
+            {
+                name: 'content.category.update',
+                parentName: 'content.category.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.UPDATE,
+                    subject: CategoryEntity,
+                },
+            },
+            {
+                name: 'content.category.restore',
+                parentName: 'content.category.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.RESTORE,
+                    subject: CategoryEntity,
+                },
+            },
+            {
+                name: 'content.category.read_list',
+                parentName: 'content.category.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.READ_LIST,
+                    subject: CategoryEntity,
+                },
+            },
+            {
+                name: 'content.category.read_detail',
+                parentName: 'content.category.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.READ_DETAIL,
+                    subject: CategoryEntity,
+                },
+            },
+            // comment crud
+            {
+                name: 'content.comment.delete',
+                parentName: 'content.comment.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.DELETE,
+                    subject: CategoryEntity,
+                },
+            },
+            {
+                name: 'content.comment.read_list',
+                parentName: 'content.comment.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.READ_LIST,
+                    subject: CategoryEntity,
+                },
+            },
+            {
+                name: 'content.comment.read_detail',
+                parentName: 'content.comment.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.READ_DETAIL,
+                    subject: CategoryEntity,
+                },
+            },
+            {
+                name: 'content.comment.read_tree',
+                parentName: 'content.comment.manage',
+                type: MenuType.PERMISSION,
+                rule: {
+                    action: PermissionAction.READ_TREE,
+                    subject: CategoryEntity,
                 },
             },
         ]);

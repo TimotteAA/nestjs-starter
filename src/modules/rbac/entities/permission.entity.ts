@@ -45,7 +45,7 @@ export class PermissionEntity<
     })
     customOrder!: number;
 
-    @Expose()
+    // @Expose()
     @Type(() => PermissionEntity)
     @TreeParent()
     parent: PermissionEntity | null;

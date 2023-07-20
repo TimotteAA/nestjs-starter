@@ -13,6 +13,7 @@ export enum PermissionAction {
     CREATE = 'create',
     READ_DETAIL = 'read_detail',
     READ_LIST = 'read_list',
+    READ_TREE = 'read_tree',
     UPDATE = 'update',
     DELETE = 'delete',
     OWNER = 'owner',

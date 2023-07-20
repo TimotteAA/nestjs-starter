@@ -72,7 +72,8 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                 subject: 'all',
             } as any,
             customOrder: 0,
-            type: MenuType.DIRECTORY,
+            type: MenuType.PERMISSION,
+            parentName: 'global.permission',
         },
         {
             name: 'rbac.manage',
@@ -136,7 +137,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         {
             name: 'rabc.role.delete',
             label: '删除角色',
-            parentName: 'rbac.role.delete',
+            parentName: 'rbac.role.manage',
             type: MenuType.PERMISSION,
             rule: {
                 action: PermissionAction.DELETE,
@@ -190,9 +191,9 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     }
 
     async onApplicationBootstrap() {
-        console.log(
-            'app start ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
-        );
+        // console.log(
+        //     'app start ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
+        // );
         // // 在运行cli时防止报错
         // console.log(await this.configure.get<boolean>('app'));
         if (!(await this.configure.get<boolean>('app.server', false))) return;
@@ -328,16 +329,9 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             // 去掉rule.conditions
             // const permission = omit(item, ['conditions']);
             const permission = {
-                ...item,
+                ...omit(item, ['parentName']),
                 rule: omit(item.rule, 'conditions'),
-                parent: isNil(item.parentName)
-                    ? null
-                    : await manager.findOne(PermissionEntity, {
-                          where: {
-                              name: item.parentName,
-                          },
-                      }),
-            };
+            } as any;
 
             // console.log("4", permission)
             const old = await manager.findOne(PermissionEntity, {
@@ -346,20 +340,44 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
                 },
                 relations: ['parent'],
             });
-            if (isNil(old)) {
-                await manager.save(manager.create(PermissionEntity, permission));
+
+            if (item.parentName) {
+                permission.parent = await manager.findOne(PermissionEntity, {
+                    where: {
+                        name: item.parentName,
+                    },
+                });
+
+                if (!permission.parent) {
+                    throw new Error(`Parent permission ${item.parentName} not exists!`);
+                }
             } else {
-                if (permission.parent.name !== old.parent.name) {
-                    // remove parent
+                // 如果这个权限没有父权限名称，则确保其在数据库中也没有父权限
+                if (old && old.parent) {
                     await manager
                         .createQueryBuilder()
                         .relation(PermissionEntity, 'parent')
                         .of(old)
                         .set(null);
-                    await manager.update(PermissionEntity, old.id, permission);
-                } else {
-                    await manager.update(PermissionEntity, old.id, omit(permission, ['parent']));
                 }
+                permission.parent = null;
+            }
+
+            if (isNil(old)) {
+                await manager.save(manager.create(PermissionEntity, permission));
+            } else {
+                // if (permission.parent.name !== old.parent.name) {
+                //     // remove parent
+                //     await manager
+                //         .createQueryBuilder()
+                //         .relation(PermissionEntity, 'parent')
+                //         .of(old)
+                //         .set(null);
+                //     await manager.update(PermissionEntity, old.id, permission);
+                // } else {
+                //     await manager.update(PermissionEntity, old.id, omit(permission, ['parent']));
+                // }
+                await manager.save(manager.merge(PermissionEntity, old, permission));
             }
         }
 
@@ -381,29 +399,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         /** *********** 同步普通角色 *************** */
         // console.log('roles', roles);
         for (const role of roles) {
-            // const p = this.roles.find(r => r.name === role.name).permissions
-            // // 动态创建的角色不会同步
-            // const roleMemory = this.roles.find((r) => r.name === role.name);
-            // // 处理权限
-            // if (roleMemory) {
-            //     // 新配置的权限
-            //     const rolePermissions = await manager.findBy(PermissionEntity, {
-            //         // 新配置的role的权限
-            //         name: In(roleMemory.permissions),
-            //     });
-            //     const oldPermissions = role.permissions;
-            //     await manager
-            //         .createQueryBuilder()
-            //         .relation(RoleEntity, 'permissions')
-            //         .of(role)
-            //         .remove(oldPermissions);
-
-            //     await manager
-            //         .createQueryBuilder()
-            //         .relation(RoleEntity, 'permissions')
-            //         .of(role)
-            //         .add(rolePermissions);
-            // }
             const rolePermissions = await manager.findBy(PermissionEntity, {
                 name: In(this.roles.find(({ name }) => name === role.name).permissions),
             });
@@ -452,7 +447,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             },
             relations: ['roles', 'permissions'],
         });
-        console.log('superUser', superUser);
+        // console.log('superUser', superUser);
         // console.log("superRole", superRole)
 
         // 不为空
