@@ -19,6 +19,7 @@ import { PermissionType, Role } from './types';
  * @param subject
  */
 const getSubject = <S extends SubjectType>(subject: S) => {
+    if (!subject) return null;
     if (typeof subject === 'string') return subject;
     if (subject.modelName) return subject.modelName;
     return subject.name;

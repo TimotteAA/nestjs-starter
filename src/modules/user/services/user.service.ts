@@ -24,15 +24,15 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
         // 在运行cli时防止报错
         // console.log(await this.configure.get("app"));
         if (!(await this.configure.get<boolean>('app.server', false))) return null;
-        // console.log("user module init>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        // console.log(
+        //     'user module init>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
+        // );
         const adminConf = await getUserConfig<UserConfig['super']>('super');
-        const admin = await this.userRepository.findOneBy({
-            username: adminConf.username,
-        } as any);
+        const admin = await this.findOneByCredential(adminConf.username);
         if (!isNil(admin)) {
             if (!admin.isCreator) {
-                await this.update({ id: admin.id, isCreator: true });
-                return this.findOneByCredential(admin.username);
+                await UserEntity.save({ id: admin.id, isCreator: true });
+                return this.findOneByCredential(adminConf.username);
             }
             return admin;
         }
