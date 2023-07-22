@@ -11,6 +11,7 @@ import { DatabaseModule } from '@/modules/database/database.module';
 
 import { ElasticModule } from '@/modules/elastic/elastic.module';
 
+import { MediaModule } from '@/modules/media/media.module';
 import { QueueModule } from '@/modules/queue/queue.module';
 import { RedisModule } from '@/modules/redis/redis.module';
 import { RestfulModule } from '@/modules/restful/restful.module';
@@ -88,6 +89,9 @@ export async function createBootModule(
     }
     if (configure.has('sms') || configure.has('cos')) {
         importModules.push(TecentOsModule);
+    }
+    if (configure.has('media')) {
+        importModules.push(MediaModule);
     }
     const moduleMaps = await createImportModules(configure, importModules);
     const imports: ModuleMetadata['imports'] = Object.values(moduleMaps).map((m) => m.module);

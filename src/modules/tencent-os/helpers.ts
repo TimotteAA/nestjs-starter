@@ -1,3 +1,5 @@
+import { toNumber } from 'lodash';
+
 import { ConfigureRegister, ConfigureFactory } from '../core/types';
 
 import { SmsSdkOptions, CosStsOptions } from './types';
@@ -27,7 +29,7 @@ export const createCosConfig: (
     defaultRegister: (configure) => {
         const cosUrl = `qcs::cos:${configure.env('COS_REGION')}:uid/${configure.env(
             'COS_APP_ID',
-        )}:${configure.env('COS_BUCKET')}/${configure.env('COS_ALLOW_PREFIX')}/*`;
+        )}:${configure.env('COS_BUCKET')}/${configure.env('COS_ALLOW_PREFIX')}`;
 
         return {
             credential: {
@@ -38,8 +40,10 @@ export const createCosConfig: (
                     statement: [
                         {
                             action: [
+                                // 简单上传
                                 'name/cos:PutObject',
                                 'name/cos:PostObject',
+                                // 分片上传
                                 'name/cos:InitiateMultipartUpload',
                                 'name/cos:ListMultipartUploads',
                                 'name/cos:ListParts',
@@ -50,11 +54,13 @@ export const createCosConfig: (
                             effect: 'allow',
                             resource: [cosUrl],
                         },
+                        // 访问存储桶
                         {
                             action: ['name/cos:GetObject'],
                             effect: 'allow',
                             resource: [cosUrl],
                         },
+                        // 删除资源
                         {
                             action: ['name/cos:DeleteObject'],
                             effect: 'allow',
@@ -62,9 +68,10 @@ export const createCosConfig: (
                         },
                     ],
                 },
+                durationSeconds: configure.env('SECRET_DURATION', (v) => toNumber(v), 1888),
             },
             region: configure.env('COS_REGION'),
-            bucket: configure.env('COS_BUCKET', 'timotte-1316630864'),
+            bucket: configure.env('COS_BUCKET'),
             // bucket文件路径
             avatarPrefix: configure.env('COS_AVATAR_PREFIX'),
             bannerPrefix: configure.env('COS_BANNER_PREFIX'),

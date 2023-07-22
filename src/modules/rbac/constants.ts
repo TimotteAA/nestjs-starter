@@ -1,3 +1,5 @@
+import { PermissionEntity } from './entities';
+
 /**
  * 默认的系统用户：普通用户、超级管理员
  */
@@ -40,3 +42,10 @@ export enum MenuType {
 }
 
 export const PERMISSION_CHECKERS = 'permission_checkers';
+
+export const DirectoryOrMenuRule: (path: string) => ClassToPlain<PermissionEntity>['rule'] = (
+    path: string,
+) => ({
+    action: 'VIEW',
+    subject: path,
+});

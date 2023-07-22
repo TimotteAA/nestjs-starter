@@ -2,8 +2,8 @@ import { Body, Controller, Post } from '@nestjs/common';
 
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { PermissionAction } from '@/modules/rbac/constants';
-import { PermissionChecker } from '@/modules/rbac/types';
+import { Permission } from '@/modules/rbac/decorators';
+import { createCrudPermission } from '@/modules/rbac/helpers';
 import { BaseControllerWithTrash } from '@/modules/restful/base';
 import { Crud, Depends } from '@/modules/restful/decorators';
 
@@ -19,11 +19,6 @@ import { ManageCreatePostDto, ManageUpdatePostDto } from '../../dtos/manage/post
 import { PostEntity } from '../../entities';
 import { PostService } from '../../services/post.service';
 
-// 文章的后台管理权限
-const permissions: PermissionChecker[] = [
-    async (ab) => ab.can(PermissionAction.MANAGE, PostEntity.name),
-];
-
 @ApiTags('文章管理')
 @Depends(ContentModule)
 @Crud(async () => ({
@@ -33,28 +28,43 @@ const permissions: PermissionChecker[] = [
             name: 'list',
             option: createHookOption({
                 summary: '文章查询,以分页模式展示',
-                permissions,
+                permissions: [createCrudPermission(PostEntity).read_list],
             }),
         },
         {
             name: 'detail',
-            option: createHookOption({ summary: '文章查询,以分页模式展示', permissions }),
+            option: createHookOption({
+                summary: '文章查询,以分页模式展示',
+                permissions: [createCrudPermission(PostEntity).read_detail],
+            }),
         },
         {
             name: 'create',
-            option: createHookOption({ summary: '创建文章', permissions }),
+            option: createHookOption({
+                summary: '创建文章',
+                permissions: [createCrudPermission(PostEntity).create],
+            }),
         },
         {
             name: 'update',
-            option: createHookOption({ summary: '更新文章', permissions }),
+            option: createHookOption({
+                summary: '更新文章',
+                permissions: [createCrudPermission(PostEntity).update],
+            }),
         },
         {
             name: 'delete',
-            option: createHookOption({ summary: '删除文章', permissions }),
+            option: createHookOption({
+                summary: '删除文章',
+                permissions: [createCrudPermission(PostEntity).delete],
+            }),
         },
         {
             name: 'restore',
-            option: createHookOption({ summary: '恢复文章', permissions }),
+            option: createHookOption({
+                summary: '恢复文章',
+                permissions: [createCrudPermission(PostEntity).restore],
+            }),
         },
     ],
     dtos: {
@@ -69,6 +79,7 @@ export class PostController extends BaseControllerWithTrash<PostService> {
         super(service);
     }
 
+    @Permission(createCrudPermission(PostEntity).create)
     @ApiOperation({ description: '发表文章' })
     @Post()
     async create(@Body() data: ManageCreatePostDto, @ReqUser() user: ClassToPlain<UserEntity>) {

@@ -10,7 +10,7 @@ import { UserEntity } from '../user/entities';
 import { getUserConfig } from '../user/helpers';
 import { UserConfig } from '../user/types';
 
-import { MenuType, PermissionAction, SystemRoles } from './constants';
+import { DirectoryOrMenuRule, MenuType, PermissionAction, SystemRoles } from './constants';
 import { PermissionEntity, RoleEntity } from './entities';
 import { PermissionType, Role } from './types';
 
@@ -62,7 +62,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             name: 'global.permission',
             type: MenuType.PERMISSION,
         },
-        // 下面是后台权限
+        // 超级管理员权限
         {
             name: 'system.manage',
             label: '系统管理',
@@ -75,23 +75,22 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             type: MenuType.PERMISSION,
             parentName: 'global.permission',
         },
+        // 后台管理模块
         {
             name: 'rbac.manage',
             label: 'rbac模块管理',
             customOrder: 0,
             type: MenuType.DIRECTORY,
-        },
-        {
-            name: 'rbac.permission.manage',
-            label: '权限管理',
-            type: MenuType.MENU,
-            parentName: 'rbac.manage',
+            path: '/rbac',
+            rule: DirectoryOrMenuRule('rbac') as any,
         },
         {
             name: 'rbac.role.manage',
             label: '角色管理',
             parentName: 'rbac.manage',
             type: MenuType.MENU,
+            path: '/rbac/role',
+            rule: DirectoryOrMenuRule('/rbac/role') as any,
         },
         // crud of roles
         {
@@ -142,6 +141,45 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
             rule: {
                 action: PermissionAction.DELETE,
                 subject: RoleEntity,
+            } as any,
+        },
+        // permission: list、tree、detail
+        {
+            name: 'rbac.permission.manage',
+            label: '权限管理',
+            type: MenuType.MENU,
+            parentName: 'rbac.manage',
+            path: '/rbac/permission',
+            rule: DirectoryOrMenuRule('/rbac/permission') as any,
+        },
+        {
+            name: 'rabc.permission.read_list',
+            label: '分页查询权限',
+            parentName: 'rbac.permission.manage',
+            type: MenuType.PERMISSION,
+            rule: {
+                action: PermissionAction.READ_LIST,
+                subject: PermissionEntity,
+            } as any,
+        },
+        {
+            name: 'rabc.permission.read_tree',
+            label: '查询权限树',
+            parentName: 'rbac.permission.manage',
+            type: MenuType.PERMISSION,
+            rule: {
+                action: PermissionAction.READ_TREE,
+                subject: PermissionEntity,
+            } as any,
+        },
+        {
+            name: 'rabc.permission.read_list',
+            label: '查询权限详情',
+            parentName: 'rbac.permission.manage',
+            type: MenuType.PERMISSION,
+            rule: {
+                action: PermissionAction.READ_DETAIL,
+                subject: PermissionEntity,
             } as any,
         },
     ];

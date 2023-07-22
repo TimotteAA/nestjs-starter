@@ -8,3 +8,5 @@ export * from './redis.config';
 export * from './queue.config';
 export * from './smtp.config';
 export * from './sms.config';
+export * from './cos.config';
+export * from './media.config';

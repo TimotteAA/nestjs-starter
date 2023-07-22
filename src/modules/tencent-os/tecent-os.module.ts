@@ -1,7 +1,7 @@
 import { ModuleBuilder } from '../core/decorators';
 
-import { SmsService } from './services';
-import { SmsSdkOptions } from './types';
+import { CosService, SmsService } from './services';
+import { CosStsOptions, SmsSdkOptions } from './types';
 
 @ModuleBuilder(async (configure) => ({
     global: true,
@@ -13,14 +13,14 @@ import { SmsSdkOptions } from './types';
                 return new SmsService(config);
             },
         },
-        // {
-        //     provide: CosService,
-        //     useFactory: async () => {
-        //         const config = await configure.get<CosStsOptions>('cos');
-        //         return new CosService(config);
-        //     },
-        // },
+        {
+            provide: CosService,
+            useFactory: async () => {
+                const config = await configure.get<CosStsOptions>('cos');
+                return new CosService(config);
+            },
+        },
     ],
-    exports: [SmsService],
+    exports: [SmsService, CosService],
 }))
 export class TecentOsModule {}

@@ -2,9 +2,8 @@ import { Body, Controller, Get, Query, SerializeOptions, Delete } from '@nestjs/
 
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { PermissionAction } from '@/modules/rbac/constants';
 import { Permission } from '@/modules/rbac/decorators';
-import { PermissionChecker } from '@/modules/rbac/types';
+import { createCrudPermission } from '@/modules/rbac/helpers';
 import { BaseController } from '@/modules/restful/base';
 import { Crud, Depends } from '@/modules/restful/decorators';
 
@@ -16,10 +15,6 @@ import { ManageQueryCommentDto, ManageQueryCommentTreeDto } from '../../dtos/man
 import { CommentEntity } from '../../entities';
 import { CommentService } from '../../services';
 
-const permissions: PermissionChecker[] = [
-    async (ab) => ab.can(PermissionAction.MANAGE, CommentEntity),
-];
-
 @ApiBearerAuth()
 @ApiTags('评论管理')
 @Crud(async () => ({
@@ -27,15 +22,24 @@ const permissions: PermissionChecker[] = [
     enabled: [
         {
             name: 'list',
-            option: createHookOption({ summary: '评论查询,以分页模式展示', permissions }),
+            option: createHookOption({
+                summary: '评论查询,以分页模式展示',
+                permissions: [createCrudPermission(CommentEntity).read_list],
+            }),
         },
         {
             name: 'detail',
-            option: createHookOption({ summary: '评论详情', permissions }),
+            option: createHookOption({
+                summary: '评论详情',
+                permissions: [createCrudPermission(CommentEntity).read_detail],
+            }),
         },
         {
             name: 'delete',
-            option: createHookOption({ summary: '删除评论', permissions }),
+            option: createHookOption({
+                summary: '删除评论',
+                permissions: [createCrudPermission(CommentEntity).delete],
+            }),
         },
     ],
     dtos: {
@@ -49,6 +53,7 @@ export class CommentController extends BaseController<CommentService> {
         super(service);
     }
 
+    @Permission(createCrudPermission(CommentEntity).read_tree)
     @Get('tree')
     @ApiOperation({ summary: '树形结构评论查询' })
     @SerializeOptions({ groups: ['comment-tree'] })
@@ -59,11 +64,10 @@ export class CommentController extends BaseController<CommentService> {
         return this.service.findTrees(query);
     }
 
-    @Permission(permissions[0])
+    @Permission(createCrudPermission(CommentEntity).delete)
     @Delete()
     @ApiOperation({ summary: '删除评论' })
     async delete(@Body() data: DeleteWithTrashDto): Promise<any> {
-        console.log('ids comment', data);
         return this.service.delete(data.ids, false);
     }
 }

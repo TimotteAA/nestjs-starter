@@ -62,6 +62,27 @@ export class App {
                 const restful = this._app.get(Restful);
                 restful.factoryDocs(this._app);
             }
+            // 底层是fastify，启用文件上传
+            if (this._app.getHttpAdapter() instanceof FastifyAdapter) {
+                // 启用fastify文件上传
+                this._app.register(require('@fastify/multipart'), {
+                    attachFieldsToBody: true,
+                });
+                const fastifyInstance = this._app.getHttpAdapter().getInstance();
+                fastifyInstance.addHook(
+                    'onRequest',
+                    (request: any, reply: any, done: (...args: any[]) => any) => {
+                        reply.setHeader = function (key: string, value: any) {
+                            return this.raw.setHeader(key, value);
+                        };
+                        reply.end = function () {
+                            this.raw.end();
+                        };
+                        request.res = reply;
+                        done();
+                    },
+                );
+            }
             // 允许使用关闭监听的钩子
             this._app.enableShutdownHooks();
             // 为class-validator添加容器以便在自定义约束中可以注入dataSource等依赖

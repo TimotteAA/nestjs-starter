@@ -2,9 +2,8 @@ import { Controller, Get, Query, SerializeOptions } from '@nestjs/common';
 
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { PermissionAction } from '@/modules/rbac/constants';
 import { Permission } from '@/modules/rbac/decorators';
-import { PermissionChecker } from '@/modules/rbac/types';
+import { createCrudPermission } from '@/modules/rbac/helpers';
 import { BaseControllerWithTrash } from '@/modules/restful/base';
 
 import { Crud, Depends } from '@/modules/restful/decorators';
@@ -22,10 +21,6 @@ import {
 import { CategoryEntity } from '../../entities';
 import { CategoryService } from '../../services';
 
-const permissions: PermissionChecker[] = [
-    async (ab) => ab.can(PermissionAction.MANAGE, CategoryEntity),
-];
-
 @ApiTags('分类管理')
 @ApiBearerAuth()
 @Depends(ContentModule)
@@ -34,27 +29,45 @@ const permissions: PermissionChecker[] = [
     enabled: [
         {
             name: 'list',
-            option: createHookOption({ summary: '分类查询,以分页模式展示', permissions }),
+            option: createHookOption({
+                summary: '分类查询,以分页模式展示',
+                permissions: [createCrudPermission(CategoryEntity).read_list],
+            }),
         },
         {
             name: 'detail',
-            option: createHookOption({ summary: '分类详情', permissions }),
+            option: createHookOption({
+                summary: '分类详情',
+                permissions: [createCrudPermission(CategoryEntity).read_detail],
+            }),
         },
         {
             name: 'create',
-            option: createHookOption({ summary: '创建分类', permissions }),
+            option: createHookOption({
+                summary: '创建分类',
+                permissions: [createCrudPermission(CategoryEntity).create],
+            }),
         },
         {
             name: 'update',
-            option: createHookOption({ summary: '更新分类', permissions }),
+            option: createHookOption({
+                summary: '更新分类',
+                permissions: [createCrudPermission(CategoryEntity).update],
+            }),
         },
         {
             name: 'delete',
-            option: createHookOption({ summary: '删除分类', permissions }),
+            option: createHookOption({
+                summary: '删除分类',
+                permissions: [createCrudPermission(CategoryEntity).delete],
+            }),
         },
         {
             name: 'restore',
-            option: createHookOption({ summary: '恢复分类', permissions }),
+            option: createHookOption({
+                summary: '恢复分类',
+                permissions: [createCrudPermission(CategoryEntity).restore],
+            }),
         },
     ],
     dtos: {
@@ -71,7 +84,7 @@ export class CategoryController extends BaseControllerWithTrash<CategoryService>
 
     @Get('tree')
     // @Guest()
-    @Permission(permissions[0])
+    @Permission(createCrudPermission(CategoryEntity).read_tree)
     @ApiOperation({ summary: '树形结构分类查询' })
     @SerializeOptions({ groups: ['category-tree'] })
     async tree(@Query() options: ManageQueryCategoryTreeDto) {

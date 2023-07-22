@@ -17,7 +17,7 @@ import { QueueConfig } from './types';
         global: true,
         imports: queues.map((queue) => {
             const redisOption = redisOptions.find((o) => o.name === queue.redis).connectOptions;
-            return BullModule.forRoot({ connection: new Redis(redisOption) });
+            return BullModule.forRoot({ connection: new Redis(queue.connection && redisOption) });
         }),
     };
 })

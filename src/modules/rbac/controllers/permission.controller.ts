@@ -6,21 +6,12 @@ import { Crud, Depends } from '@/modules/restful/decorators';
 
 import { createHookOption } from '@/modules/restful/helpers';
 
-import { Guest } from '@/modules/user/decorators';
-
-import { PermissionAction } from '../constants';
+import { Permission } from '../decorators';
 import { QueryPermissionDto } from '../dtos';
 import { PermissionEntity } from '../entities';
+import { createCrudPermission } from '../helpers';
 import { RbacModule } from '../rbac.module';
 import { PermissionService } from '../services';
-import { PermissionChecker } from '../types';
-
-/**
- * 权限：权限管理员
- */
-const permissions: PermissionChecker[] = [
-    async (ab) => ab.can(PermissionAction.MANAGE, PermissionEntity.name),
-];
 
 @ApiTags('权限管理')
 @ApiBearerAuth()
@@ -28,8 +19,20 @@ const permissions: PermissionChecker[] = [
 @Crud(async () => ({
     id: 'permission',
     enabled: [
-        { name: 'list', option: createHookOption({ summary: '分页查询权限', permissions }) },
-        { name: 'detail', option: createHookOption({ summary: '查看权限详情', permissions }) },
+        {
+            name: 'list',
+            option: createHookOption({
+                summary: '分页查询权限',
+                permissions: [createCrudPermission(PermissionEntity).read_list],
+            }),
+        },
+        {
+            name: 'detail',
+            option: createHookOption({
+                summary: '查看权限详情',
+                permissions: [createCrudPermission(PermissionEntity).read_detail],
+            }),
+        },
     ],
     dtos: {
         list: QueryPermissionDto,
@@ -53,7 +56,7 @@ export class PermissionController extends BaseController<PermissionService> {
 
     @SerializeOptions({ groups: ['permission-tree'] })
     @ApiOperation({ summary: '返回权限树' })
-    @Guest()
+    @Permission(createCrudPermission(PermissionEntity).read_tree)
     @Get('tree')
     async tree() {
         return this.permissionService.findTrees();

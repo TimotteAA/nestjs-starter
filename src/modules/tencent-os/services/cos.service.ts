@@ -2,7 +2,6 @@ import { randomBytes } from 'crypto';
 
 import { extname } from 'path';
 
-// @ts-ignore
 import { MultipartFile } from '@fastify/multipart';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import chalk from 'chalk';
@@ -34,7 +33,7 @@ export class CosService {
      * @param body
      * @param mimetype
      */
-    async upload(file: MultipartFile, prefix: string, key: string, options?: SimpleUploadParams) {
+    async upload(file: MultipartFile, key: string, options?: SimpleUploadParams) {
         const uploadOptions = (options ?? {}) as SimpleUploadParams;
         this.cos = await this.setCOS();
         const body = await file.toBuffer();
@@ -44,7 +43,7 @@ export class CosService {
             res = await this.cos.putObject({
                 Bucket: this.config.bucket,
                 Region: this.config.region,
-                Key: prefix + key,
+                Key: key,
                 StorageClass: 'MAZ_STANDARD',
                 Body: body,
                 ContentEncoding: mimetype,
@@ -75,6 +74,20 @@ export class CosService {
         } catch (err) {
             console.log(chalk.red(err));
             throw new BadRequestException({}, 'oss删除失败，请联系服务器管理员');
+        }
+    }
+
+    async deleteMulti(items: { prefix: string; key: string }[]) {
+        this.cos = await this.setCOS();
+        const objects = items.map(({ prefix, key }) => ({ Key: `${prefix}/${key}` }));
+        try {
+            await this.cos.deleteMultipleObject({
+                Objects: objects,
+                Bucket: this.config.bucket,
+                Region: this.config.region,
+            });
+        } catch (err) {
+            throw new BadRequestException({});
         }
     }
 

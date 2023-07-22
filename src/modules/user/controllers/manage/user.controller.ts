@@ -2,8 +2,7 @@ import { Controller } from '@nestjs/common';
 
 import { ApiTags } from '@nestjs/swagger';
 
-import { PermissionAction } from '@/modules/rbac/constants';
-import { PermissionChecker } from '@/modules/rbac/types';
+import { createCrudPermission } from '@/modules/rbac/helpers';
 import { BaseControllerWithTrash } from '@/modules/restful/base';
 import { Crud, Depends } from '@/modules/restful/decorators';
 
@@ -13,10 +12,6 @@ import { CreateUserDto, QueryUserDto, UpdateUserDto } from '../../dtos/manage';
 import { UserEntity } from '../../entities';
 import { UserService } from '../../services/user.service';
 import { UserModule } from '../../user.module';
-
-const permissions: PermissionChecker[] = [
-    async (ab) => ab.can(PermissionAction.MANAGE, UserEntity.name),
-];
 
 /**
  * 用户管理控制器
@@ -28,13 +23,46 @@ const permissions: PermissionChecker[] = [
     enabled: [
         {
             name: 'list',
-            option: createHookOption({ summary: '用户查询,以分页模式展示', permissions }),
+            option: createHookOption({
+                summary: '用户查询,以分页模式展示',
+                permissions: [createCrudPermission(UserEntity).read_list],
+            }),
         },
-        { name: 'detail', option: createHookOption({ summary: '用户详情', permissions }) },
-        { name: 'create', option: createHookOption({ summary: '新增用户', permissions }) },
-        { name: 'update', option: createHookOption({ summary: '修改用户信息', permissions }) },
-        { name: 'delete', option: createHookOption({ summary: '删除用户', permissions }) },
-        { name: 'restore', option: createHookOption({ summary: '恢复用户', permissions }) },
+        {
+            name: 'detail',
+            option: createHookOption({
+                summary: '用户详情',
+                permissions: [createCrudPermission(UserEntity).read_detail],
+            }),
+        },
+        {
+            name: 'create',
+            option: createHookOption({
+                summary: '新增用户',
+                permissions: [createCrudPermission(UserEntity).create],
+            }),
+        },
+        {
+            name: 'update',
+            option: createHookOption({
+                summary: '修改用户信息',
+                permissions: [createCrudPermission(UserEntity).update],
+            }),
+        },
+        {
+            name: 'delete',
+            option: createHookOption({
+                summary: '删除用户',
+                permissions: [createCrudPermission(UserEntity).delete],
+            }),
+        },
+        {
+            name: 'restore',
+            option: createHookOption({
+                summary: '恢复用户',
+                permissions: [createCrudPermission(UserEntity).restore],
+            }),
+        },
     ],
     dtos: {
         list: QueryUserDto,

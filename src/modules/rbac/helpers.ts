@@ -4,7 +4,7 @@ import { isNil } from 'lodash';
 import { ObjectLiteral } from 'typeorm';
 
 import { PermissionAction } from './constants';
-import { PermissionEntity, RoleEntity } from './entities';
+import { PermissionChecker } from './types';
 
 /**
  * 从request中的params或body中得到id或ids字段
@@ -39,21 +39,17 @@ export const checkOwner = async <E extends ObjectLiteral>(
     return models.every((model) => ability.can(permission ?? PermissionAction.OWNER, model));
 };
 
-export const addRolePermissions = () => [
-    {
-        name: 'role.manage',
-        rule: {
-            action: PermissionAction.MANAGE,
-            subject: RoleEntity,
-        },
-        customOrder: 3,
-    },
-    {
-        name: 'permission.manage',
-        rule: {
-            action: PermissionAction.MANAGE,
-            subject: PermissionEntity,
-        },
-        customOrder: 4,
-    },
-];
+export const createCrudPermission = <Entity extends ObjectLiteral>(E: Entity) => {
+    // @ts-ignore
+    const permissions: Record<PermissionAction, PermissionChecker> = {
+        create: async (ab) => ab.can(PermissionAction.CREATE, E.name),
+        read_detail: async (ab) => ab.can(PermissionAction.READ_DETAIL, E.name),
+        read_list: async (ab) => ab.can(PermissionAction.READ_LIST, E.name),
+        read_tree: async (ab) => ab.can(PermissionAction.READ_TREE, E.name),
+        delete: async (ab) => ab.can(PermissionAction.DELETE, E.name),
+        update: async (ab) => ab.can(PermissionAction.UPDATE, E.name),
+        restore: async (ab) => ab.can(PermissionAction.RESTORE, E.name),
+    };
+
+    return permissions;
+};

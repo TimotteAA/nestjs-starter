@@ -5,15 +5,18 @@ import {
     DeleteDateColumn,
     Entity,
     Index,
+    JoinColumn,
     JoinTable,
     ManyToMany,
     ManyToOne,
     OneToMany,
+    OneToOne,
     UpdateDateColumn,
 } from 'typeorm';
 
 import { BaseEntity } from '@/modules/database/base';
 
+import { MediaEntity } from '@/modules/media/entities';
 import { UserEntity } from '@/modules/user/entities';
 
 import { PostBodyType } from '../constants';
@@ -112,4 +115,16 @@ export class PostEntity extends BaseEntity {
         onUpdate: 'CASCADE',
     })
     author!: UserEntity;
+
+    @OneToOne(() => MediaEntity, (media) => media.coverPost, {
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+        nullable: true,
+    })
+    @JoinColumn()
+    coverImg?: MediaEntity;
+
+    @OneToMany(() => MediaEntity, (media) => media.bodyPost)
+    @JoinTable()
+    bodyImgs?: MediaEntity[];
 }
