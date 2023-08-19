@@ -1,11 +1,14 @@
+import * as chatControllers from '@/modules/chat/controller';
 import * as contentControllers from '@/modules/content/controllers';
 import * as contentManageControllers from '@/modules/content/controllers/manage';
 
 import { Configure } from '@/modules/core/configure';
+import * as mediaControllers from '@/modules/media/controller';
+import * as mediaManageControllers from '@/modules/media/controller/manager';
 import * as rbacManageControllers from '@/modules/rbac/controllers';
 import { ApiVersionOption } from '@/modules/restful/types';
 import * as userControllers from '@/modules/user/controllers';
-import * as userMangeControllers from '@/modules/user/controllers/manage';
+import * as userManageControllers from '@/modules/user/controllers/manage';
 
 export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
     routes: [
@@ -26,6 +29,8 @@ export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
                     { name: '账户操作', description: 'Auth操作' },
                     { name: '用户管理', description: '用户的增删查改操作' },
                     { name: '验证码操作', description: '用户相关验证码操作' },
+                    { name: '前端上传文件', description: '前端上传文件接口' },
+                    { name: '消息路由', description: '消息路由' },
                 ],
             },
             children: [
@@ -38,6 +43,16 @@ export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
                     name: 'user',
                     path: 'user',
                     controllers: Object.values(userControllers),
+                },
+                {
+                    name: 'media',
+                    path: '/',
+                    controllers: Object.values(mediaControllers),
+                },
+                {
+                    name: 'chat',
+                    path: '/',
+                    controllers: Object.values(chatControllers),
                 },
             ],
         },
@@ -74,6 +89,10 @@ export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
                         name: '用户管理',
                         description: '用户管理',
                     },
+                    {
+                        name: '文件管理',
+                        description: '后台文件管理',
+                    },
                 ],
             },
             children: [
@@ -90,7 +109,12 @@ export const v1 = async (configure: Configure): Promise<ApiVersionOption> => ({
                 {
                     name: 'user',
                     path: '/',
-                    controllers: Object.values(userMangeControllers),
+                    controllers: Object.values(userManageControllers),
+                },
+                {
+                    name: 'media',
+                    path: '/',
+                    controllers: Object.values(mediaManageControllers),
                 },
             ],
         },

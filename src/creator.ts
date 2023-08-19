@@ -5,6 +5,7 @@ import { createApp } from '@/modules/core/helpers/app';
 
 import * as configs from './config';
 
+import { ChatModule } from './modules/chat/chat.module';
 import { ContentModule } from './modules/content/content.module';
 import { LoggerModule } from './modules/logger/logger.module';
 import { RbacGuard } from './modules/rbac/guards';
@@ -14,7 +15,7 @@ import { UserModule } from './modules/user/user.module';
 export const creator = createApp({
     configs,
     configure: { storage: true },
-    modules: [UserModule, ContentModule, RbacModule, LoggerModule],
+    modules: [UserModule, ContentModule, RbacModule, LoggerModule, ChatModule],
     // @ts-ignore
     globals: { guard: RbacGuard },
     builder: async ({ configure, BootModule }) => {

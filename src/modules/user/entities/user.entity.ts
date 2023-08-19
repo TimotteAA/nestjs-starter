@@ -11,11 +11,13 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
+import { MessageEntity, MessageReceiver } from '@/modules/chat/entities';
 import { BaseEntity } from '@/modules/database/base';
 
 import { AddRelations } from '@/modules/database/decorators';
 import { DynamicRelation } from '@/modules/database/types';
 
+import { MediaEntity } from '@/modules/media/entities';
 import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
 
 import { getUserConfig } from '../helpers';
@@ -101,4 +103,16 @@ export class UserEntity extends BaseEntity {
     })
     @JoinTable()
     roles!: RoleEntity[];
+
+    /**
+     * 用户上传的文件
+     */
+    @OneToMany(() => MediaEntity, (media) => media.user, { onDelete: 'CASCADE' })
+    medias: MediaEntity[];
+
+    @OneToMany(() => MessageEntity, (message) => message.sender, { onDelete: 'CASCADE' })
+    messages: MessageEntity[];
+
+    @OneToMany(() => MessageReceiver, (mr) => mr.receiver)
+    receives!: MessageReceiver[];
 }

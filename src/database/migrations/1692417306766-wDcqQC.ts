@@ -1,13 +1,13 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class ShApUh1690022643791 implements MigrationInterface {
-    name = 'ShApUh1690022643791'
+export class WDcqQC1692417306766 implements MigrationInterface {
+    name = 'WDcqQC1692417306766'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE \`user_refresh_tokens\` (\`id\` varchar(36) NOT NULL, \`value\` varchar(500) NOT NULL, \`expired_at\` datetime NOT NULL COMMENT '令牌过期时间', \`createdAt\` datetime(6) NOT NULL COMMENT '令牌创建时间' DEFAULT CURRENT_TIMESTAMP(6), \`accessTokenId\` varchar(36) NULL, UNIQUE INDEX \`REL_1dfd080c2abf42198691b60ae3\` (\`accessTokenId\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`CREATE TABLE \`medias\` (\`id\` varchar(36) NOT NULL, \`ext\` varchar(255) NOT NULL COMMENT '文件类型', \`key\` varchar(255) NOT NULL COMMENT '腾讯云cos存储key', \`prefix\` varchar(255) NOT NULL, \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`bodyPostId\` varchar(36) NULL, \`userId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`rbac_permission\` (\`id\` varchar(36) NOT NULL, \`name\` varchar(255) NOT NULL COMMENT '权限名', \`label\` varchar(255) NULL COMMENT '权限别名', \`rule\` text NULL COMMENT '具体的权限规则', \`customOrder\` int NOT NULL COMMENT '权限排列字段' DEFAULT '0', \`type\` enum ('0', '1', '2') NOT NULL COMMENT '菜单类型，0是目录，1是菜单项，2是权限' DEFAULT '0', \`path\` varchar(255) NULL COMMENT '菜单链接', \`icon\` varchar(255) NULL COMMENT '菜单展示的icon', \`component\` varchar(255) NULL COMMENT '路由对应前端组件', \`external\` tinyint NOT NULL COMMENT '是否是外链' DEFAULT 0, \`keepAlive\` tinyint NOT NULL COMMENT '是否缓存' DEFAULT 1, \`show\` tinyint NOT NULL COMMENT '是否显示' DEFAULT 1, \`mpath\` varchar(255) NULL DEFAULT '', \`parentId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`rbac_roles\` (\`id\` varchar(36) NOT NULL, \`name\` varchar(255) NOT NULL COMMENT '角色名', \`label\` varchar(255) NULL COMMENT '角色别名', \`description\` text NULL COMMENT '角色描述', \`systemd\` tinyint NOT NULL COMMENT '是否为系统默认角色：普通用户与超级管理员' DEFAULT 0, \`deletedAt\` datetime(6) NULL COMMENT '删除时间', PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
-        await queryRunner.query(`CREATE TABLE \`medias\` (\`id\` varchar(36) NOT NULL, \`ext\` varchar(255) NOT NULL COMMENT '文件类型', \`key\` varchar(255) NOT NULL COMMENT '腾讯云cos存储key', \`prefix\` varchar(255) NOT NULL, \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`content_categories\` (\`id\` varchar(36) NOT NULL, \`name\` varchar(255) NOT NULL COMMENT '分类名称', \`customOrder\` int NOT NULL COMMENT '分类排序' DEFAULT '0', \`deletedAt\` datetime(6) NULL COMMENT '删除时间', \`mpath\` varchar(255) NULL DEFAULT '', \`parentId\` varchar(36) NULL, FULLTEXT INDEX \`IDX_d6aaf8517ca57297a8c3a44d3d\` (\`name\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`content_comments\` (\`id\` varchar(36) NOT NULL, \`body\` longtext NOT NULL COMMENT '评论内容', \`createdAt\` datetime(6) NOT NULL COMMENT '创建时间' DEFAULT CURRENT_TIMESTAMP(6), \`mpath\` varchar(255) NULL DEFAULT '', \`postId\` varchar(36) NOT NULL, \`authorId\` varchar(36) NOT NULL, \`parentId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`content_posts\` (\`id\` varchar(36) NOT NULL, \`title\` varchar(255) NOT NULL COMMENT '文章标题', \`body\` longtext NOT NULL COMMENT '文章内容', \`summary\` varchar(255) NULL COMMENT '文章描述', \`keywords\` text NULL COMMENT '关键字', \`type\` enum ('html', 'markdown') NOT NULL COMMENT '文章类型' DEFAULT 'markdown', \`publishedAt\` varchar(255) NULL COMMENT '发布时间', \`customOrder\` int NOT NULL COMMENT '自定义文章排序' DEFAULT '0', \`createdAt\` datetime(6) NOT NULL COMMENT '创建时间' DEFAULT CURRENT_TIMESTAMP(6), \`updatedAt\` datetime(6) NOT NULL COMMENT '更新时间' DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deletedAt\` datetime(6) NULL COMMENT '删除时间', \`authorId\` varchar(36) NOT NULL, \`coverImgId\` varchar(36) NULL, FULLTEXT INDEX \`IDX_9ef6db9d13df6882d36c8af0cc\` (\`title\`), FULLTEXT INDEX \`IDX_e51068c39974ca11fae5d44c88\` (\`body\`), FULLTEXT INDEX \`IDX_f43723dc196c18767a3893a3f7\` (\`summary\`), UNIQUE INDEX \`REL_f8fdfad5ebf43387e5bdbd57b1\` (\`coverImgId\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);
@@ -21,6 +21,8 @@ export class ShApUh1690022643791 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE \`users_permissions_rbac_permission\` (\`usersId\` varchar(36) NOT NULL, \`rbacPermissionId\` varchar(36) NOT NULL, INDEX \`IDX_8bd8695b553c556f44972fda31\` (\`usersId\`), INDEX \`IDX_ef53340fc52f7f978606f49ef1\` (\`rbacPermissionId\`), PRIMARY KEY (\`usersId\`, \`rbacPermissionId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`users_roles_rbac_roles\` (\`usersId\` varchar(36) NOT NULL, \`rbacRolesId\` varchar(36) NOT NULL, INDEX \`IDX_3b6bb31ab207ca7c21088a009c\` (\`usersId\`), INDEX \`IDX_c97d36f8e1fd7c78d13b878718\` (\`rbacRolesId\`), PRIMARY KEY (\`usersId\`, \`rbacRolesId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`ALTER TABLE \`user_refresh_tokens\` ADD CONSTRAINT \`FK_1dfd080c2abf42198691b60ae39\` FOREIGN KEY (\`accessTokenId\`) REFERENCES \`user_access_tokens\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`medias\` ADD CONSTRAINT \`FK_55823af20c627d28bac59dc1193\` FOREIGN KEY (\`bodyPostId\`) REFERENCES \`content_posts\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE \`medias\` ADD CONSTRAINT \`FK_0ca422a52c318ce86181dbf01ed\` FOREIGN KEY (\`userId\`) REFERENCES \`users\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`rbac_permission\` ADD CONSTRAINT \`FK_c3faa146f737332fa4987a74dc3\` FOREIGN KEY (\`parentId\`) REFERENCES \`rbac_permission\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`content_categories\` ADD CONSTRAINT \`FK_a03aea27707893300382b6f18ae\` FOREIGN KEY (\`parentId\`) REFERENCES \`content_categories\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE \`content_comments\` ADD CONSTRAINT \`FK_5e1c3747a0031f305e94493361f\` FOREIGN KEY (\`postId\`) REFERENCES \`content_posts\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE`);
@@ -64,6 +66,8 @@ export class ShApUh1690022643791 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`content_comments\` DROP FOREIGN KEY \`FK_5e1c3747a0031f305e94493361f\``);
         await queryRunner.query(`ALTER TABLE \`content_categories\` DROP FOREIGN KEY \`FK_a03aea27707893300382b6f18ae\``);
         await queryRunner.query(`ALTER TABLE \`rbac_permission\` DROP FOREIGN KEY \`FK_c3faa146f737332fa4987a74dc3\``);
+        await queryRunner.query(`ALTER TABLE \`medias\` DROP FOREIGN KEY \`FK_0ca422a52c318ce86181dbf01ed\``);
+        await queryRunner.query(`ALTER TABLE \`medias\` DROP FOREIGN KEY \`FK_55823af20c627d28bac59dc1193\``);
         await queryRunner.query(`ALTER TABLE \`user_refresh_tokens\` DROP FOREIGN KEY \`FK_1dfd080c2abf42198691b60ae39\``);
         await queryRunner.query(`DROP INDEX \`IDX_c97d36f8e1fd7c78d13b878718\` ON \`users_roles_rbac_roles\``);
         await queryRunner.query(`DROP INDEX \`IDX_3b6bb31ab207ca7c21088a009c\` ON \`users_roles_rbac_roles\``);
@@ -97,9 +101,9 @@ export class ShApUh1690022643791 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE \`content_comments\``);
         await queryRunner.query(`DROP INDEX \`IDX_d6aaf8517ca57297a8c3a44d3d\` ON \`content_categories\``);
         await queryRunner.query(`DROP TABLE \`content_categories\``);
-        await queryRunner.query(`DROP TABLE \`medias\``);
         await queryRunner.query(`DROP TABLE \`rbac_roles\``);
         await queryRunner.query(`DROP TABLE \`rbac_permission\``);
+        await queryRunner.query(`DROP TABLE \`medias\``);
         await queryRunner.query(`DROP INDEX \`REL_1dfd080c2abf42198691b60ae3\` ON \`user_refresh_tokens\``);
         await queryRunner.query(`DROP TABLE \`user_refresh_tokens\``);
     }

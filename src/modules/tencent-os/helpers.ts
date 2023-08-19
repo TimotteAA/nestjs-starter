@@ -30,7 +30,6 @@ export const createCosConfig: (
         const cosUrl = `qcs::cos:${configure.env('COS_REGION')}:uid/${configure.env(
             'COS_APP_ID',
         )}:${configure.env('COS_BUCKET')}/${configure.env('COS_ALLOW_PREFIX')}`;
-
         return {
             credential: {
                 secretId: configure.env('COS_SECRET_ID'),
@@ -75,6 +74,7 @@ export const createCosConfig: (
             // bucket文件路径
             avatarPrefix: configure.env('COS_AVATAR_PREFIX'),
             bannerPrefix: configure.env('COS_BANNER_PREFIX'),
+            postPrefix: configure.env('COS_POST_PREFIX'),
         };
     },
 });

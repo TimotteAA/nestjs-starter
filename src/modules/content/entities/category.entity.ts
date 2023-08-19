@@ -43,7 +43,7 @@ export class CategoryEntity extends BaseEntity {
     @TreeChildren({ cascade: true })
     children: CategoryEntity[];
 
-    @ManyToMany((type) => PostEntity, (post) => post.categories)
+    @ManyToMany(() => PostEntity, (post) => post.categories)
     posts: PostEntity[];
 
     @Expose()

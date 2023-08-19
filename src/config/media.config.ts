@@ -4,6 +4,7 @@ import { PostEntity } from '@/modules/content/entities';
 import { ConfigureFactory } from '@/modules/core/types';
 import { defaultMediaConfig } from '@/modules/media/helpers';
 import { MediaConfig } from '@/modules/media/types';
+import { UserEntity } from '@/modules/user/entities';
 
 export const media: ConfigureFactory<MediaConfig> = {
     register: () => ({
@@ -23,6 +24,13 @@ export const media: ConfigureFactory<MediaConfig> = {
                     (post) => post.bodyImgs,
                 ),
                 // others: [JoinColumn()],
+            },
+            {
+                column: 'user',
+                relation: ManyToOne(
+                    () => UserEntity,
+                    (user) => user.medias,
+                ),
             },
         ],
     }),

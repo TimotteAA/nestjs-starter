@@ -20,7 +20,7 @@ import { MediaService } from '../../services';
         {
             name: 'list',
             option: createHookOption({
-                summary: '评论查询,以分页模式展示',
+                summary: '分页查询文件',
                 // permissions: [createCrudPermission(CommentEntity).read_list],
                 guest: true,
             }),
@@ -28,7 +28,7 @@ import { MediaService } from '../../services';
         {
             name: 'detail',
             option: createHookOption({
-                summary: '评论详情',
+                summary: '文件详情',
                 // permissions: [createCrudPermission(CommentEntity).read_detail],
                 guest: true,
             }),
@@ -36,7 +36,7 @@ import { MediaService } from '../../services';
         {
             name: 'delete',
             option: createHookOption({
-                summary: '删除评论',
+                summary: '删除文件',
                 // permissions: [createCrudPermission(CommentEntity).delete],
                 guest: true,
             }),
